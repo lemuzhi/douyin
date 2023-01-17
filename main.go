@@ -2,7 +2,6 @@ package main
 
 import (
 	"douyin/cmd"
-	_ "gorm.io/driver/mysql"
 	"log"
 )
 

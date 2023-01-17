@@ -1,13 +1,16 @@
 package initialize
 
 import (
+	"database/sql"
 	"douyin/internal/model"
 	"fmt"
+	mysql2 "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 	"log"
+	"strings"
 )
 
 var DB *gorm.DB
@@ -34,6 +37,7 @@ func InitMysql(config *viper.Viper) {
 		config.GetString("mysql.config"),
 	)
 	var err error
+Label:
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: &schema.NamingStrategy{
 			SingularTable: true,
@@ -42,7 +46,26 @@ func InitMysql(config *viper.Viper) {
 		//SkipDefaultTransaction: true,
 	})
 	if err != nil {
-		panic(err)
+		mysqlErr, ok := err.(*mysql2.MySQLError)
+		if !ok {
+			panic(err)
+		}
+
+		if mysqlErr.Message == fmt.Sprintf("Unknown database '%s'", config.GetString("mysql.db")) {
+			db, errs := sql.Open("mysql", strings.SplitAfter(dsn, "/")[0])
+			if errs != nil {
+				log.Println("db Open error: ", errs)
+			}
+			if errs = db.Ping(); errs != nil {
+				log.Println("db Ping error: ", errs)
+			}
+			createSql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;", config.GetString("mysql.db"))
+			_, errs = db.Exec(createSql)
+			if errs != nil {
+				log.Panic("db Exec error: ", errs)
+			}
+			goto Label
+		}
 	}
 
 	//迁移
