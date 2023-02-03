@@ -13,11 +13,14 @@
 ```go run main,go```
 
 ### 开发流程
-1、打开终端，git pull更新到最新
+1、打开终端，git pull更新到最新    
+
 2、git branch -a查看所有分支
+
 3、git checkout 分支名，切换到属于自己的分支
+
 4、开始code
+
 5、完成code后，git push origin 分支名，将代码提交到自己的分支
+
 6、打开github，进入仓库，提交pull requests
-
-
