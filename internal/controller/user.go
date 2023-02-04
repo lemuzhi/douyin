@@ -3,7 +3,7 @@ package controller
 import (
 	"douyin/internal/model/request"
 	"douyin/internal/service"
-	errcode2 "douyin/pkg/errcode"
+	"douyin/pkg/errcode"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -12,14 +12,14 @@ func Login(c *gin.Context) {
 	params := request.LoginReq{}
 	err := c.ShouldBindQuery(&params)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errcode2.NewResponse(errcode2.ErrInvalidParams))
+		c.JSON(http.StatusBadRequest, errcode.NewResponse(errcode.ErrInvalidParams))
 		return
 	}
 
 	svc := service.New(c)
 	data, err := svc.Login(params)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errcode2.NewResponse(errcode2.Fail, err))
+		c.JSON(http.StatusBadRequest, errcode.NewResponse(errcode.Fail, err))
 		return
 	}
 
@@ -30,7 +30,7 @@ func GetUserInfo(c *gin.Context) {
 	params := request.UserReq{}
 	err := c.ShouldBindQuery(&params)
 	if err != nil {
-		c.JSON(http.StatusOK, errcode2.NewResponse(errcode2.ErrInvalidParams))
+		c.JSON(http.StatusOK, errcode.NewResponse(errcode.ErrInvalidParams))
 		return
 	}
 	svc := service.New(c)
