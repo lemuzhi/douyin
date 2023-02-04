@@ -3,7 +3,7 @@ package service
 import (
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
-	errcode2 "douyin/pkg/errcode"
+	"douyin/pkg/errcode"
 	"douyin/pkg/utils"
 	"fmt"
 	"gorm.io/gorm"
@@ -17,7 +17,7 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 	}
 
 	if !utils.VerifyPassword(user.Password, params.Password) {
-		return nil, fmt.Errorf("%v", errcode2.ErrUserOrPwd)
+		return nil, fmt.Errorf("%v", errcode.ErrUserOrPwd)
 	}
 
 	token, err := utils.GenerateToken(params.Username)
@@ -31,7 +31,7 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 	//fmt.Println("密码：", pwd)
 
 	data := &response.LoginResponse{
-		Response: errcode2.NewResponse(errcode2.OK),
+		Response: errcode.NewResponse(errcode.OK),
 		UserID:   1,
 		Token:    token,
 	}
@@ -54,14 +54,14 @@ func (svc *Service) GetUserInfo(params request.UserReq) *response.UserInfoRespon
 	if err != nil {
 		//没有找到用户，用户不存在
 		if err == gorm.ErrRecordNotFound {
-			data.Response = errcode2.NewResponse(errcode2.ErrUserNotExist)
+			data.Response = errcode.NewResponse(errcode.ErrUserNotExist)
 			return data
 		}
 		//其他错误
-		data.Response = errcode2.NewResponse(errcode2.ErrService)
+		data.Response = errcode.NewResponse(errcode.ErrService)
 		return data
 	}
 
-	data.Response = errcode2.NewResponse(errcode2.OK)
+	data.Response = errcode.NewResponse(errcode.OK)
 	return data
 }
