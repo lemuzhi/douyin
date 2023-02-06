@@ -1,6 +1,7 @@
 package service
 
 import (
+	"douyin/internal/model"
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
@@ -8,6 +9,34 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 )
+
+func (svc *Service) Register(params request.RegisterReq) (*response.LoginResponse, error) {
+	pwd, err := utils.EncipherPassword(params.Password)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("密码：", pwd)
+	user := model.User{
+		Username: params.Username,
+		Password: pwd,
+	}
+	id, err := svc.dao.Register(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := utils.GenerateToken(id)
+	if err != nil {
+		return nil, err
+	}
+
+	data := &response.LoginResponse{
+		Response: errcode.NewResponse(errcode.OK),
+		UserID:   int64(id),
+		Token:    token,
+	}
+	return data, nil
+}
 
 func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, error) {
 
@@ -20,15 +49,10 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 		return nil, fmt.Errorf("%v", errcode.ErrUserOrPwd)
 	}
 
-	token, err := utils.GenerateToken(params.Username)
+	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
 		return nil, err
 	}
-	//pwd, err := utils.EncipherPassword(params.Password)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//fmt.Println("密码：", pwd)
 
 	data := &response.LoginResponse{
 		Response: errcode.NewResponse(errcode.OK),

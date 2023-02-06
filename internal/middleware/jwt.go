@@ -21,12 +21,14 @@ func JWT() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		_, err := utils.ParseToken(token)
+		claims, err := utils.ParseToken(token)
 		if err != nil {
 			c.JSON(http.StatusOK, errcode.NewResponse(errcode.ErrAuthorized, err))
 			c.Abort()
 			return
 		}
+
+		c.Set("UserID", int64(claims.UserID))
 		c.Next()
 	}
 }

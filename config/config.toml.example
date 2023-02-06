@@ -1,12 +1,12 @@
 [gin]
 mode="debug"
-addr="127.0.0.1:8080"
+addr="192.168.1.3:8080"
 
 [mysql]
 addr="127.0.0.1"
 port="3306"
 config="charset=utf8mb4&parseTime=True&loc=Local"
-db="douyin1"
+db="douyin"
 username="root"
 password="Hacker.123"
 
@@ -14,3 +14,9 @@ password="Hacker.123"
 addr="127.0.0.1:6379"
 password=""
 db=6
+
+[upload]
+save_path = "./public/"
+server_url = "http://192.168.1.3:8080/public/"
+image_max_size = 5 #MB
+image_all_exts = ".mp4"
