@@ -10,12 +10,12 @@ import (
 var RDB *redis.Client
 
 // InitRedis 初始化连接redis
-func InitRedis(config *viper.Viper) {
+func InitRedis() {
 	RDB = redis.NewClient(&redis.Options{
-		Addr:     config.GetString("redis.addr"),
-		Username: config.GetString("redis.username"),
-		Password: config.GetString("redis.password"),
-		DB:       config.GetInt("redis.db"),
+		Addr:     viper.GetString("redis.addr"),
+		Username: viper.GetString("redis.username"),
+		Password: viper.GetString("redis.password"),
+		DB:       viper.GetInt("redis.db"),
 	})
 	_, err := RDB.Ping(context.TODO()).Result()
 	if err != nil {

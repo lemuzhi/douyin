@@ -8,15 +8,16 @@ import (
 var jwtKey = []byte("AllYourBase")
 
 type MyCustomClaims struct {
-	Username string `json:"username"`
+	UserID uint `json:"user_id"`
+	//Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成token
-func GenerateToken(username string) (string, error) {
-	expiresAt := time.Now().Add(5 * time.Second) // 24小时过期一次
+func GenerateToken(userID uint) (string, error) {
+	expiresAt := time.Now().Add(2 * time.Hour) // 2小时过期一次
 	claims := MyCustomClaims{
-		username,
+		userID,
 		jwt.RegisteredClaims{
 			// Also fixed dates can be used for the NumericDate
 			ExpiresAt: jwt.NewNumericDate(time.Unix(expiresAt.Unix(), 0)),

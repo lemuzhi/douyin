@@ -1,8 +1,13 @@
 package request
 
+type RegisterReq struct {
+	Username string `form:"username" json:"username" binding:"required,min=6,max=32"`
+	Password string `form:"password" json:"password" binding:"required,min=6,max=32"`
+}
+
 type LoginReq struct {
-	Username string `form:"username" json:"username" binding:"required,min=6,max=16"`
-	Password string `form:"password" json:"password" binding:"required,min=6,max=20"`
+	Username string `form:"username" json:"username" binding:"required,min=6,max=32"`
+	Password string `form:"password" json:"password" binding:"required,min=6,max=32"`
 }
 
 type UserReq struct {

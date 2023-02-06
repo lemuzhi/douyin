@@ -23,4 +23,5 @@ var (
 	ErrAuthorized    = ResponseCode{102005, "鉴权失败"}
 
 	ErrVideoNotExist = ResponseCode{103001, "视频不存在"}
+	ErrPublishVideo  = ResponseCode{103002, "视频发布失败"}
 )
