@@ -23,7 +23,7 @@ func (dao *Dao) GetUserInfo(id int64) (model.User, error) {
 	return user, nil
 }
 
-func (dao *Dao) FindUserByID(userID string) (user model.User, err error) {
+func (dao *Dao) FindUserByID(userID int64) (user model.User, err error) {
 	return user, dao.db.Select("id", "username", "follow_count", "follower_count").Where("id = ?", userID).Find(&user).Error
 }
 

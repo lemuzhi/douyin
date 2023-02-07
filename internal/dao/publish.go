@@ -59,8 +59,4 @@ func (dao *Dao) GetPublishList(userID string) (videoList []*response.VideoRespon
 	}
 
 	return videoList, nil
-
-	//return video, dao.db.Debug().Preload("User", func(db *gorm.DB) *gorm.DB {
-	//	return db.Select("id", "username", "follow_count", "follower_count")
-	//}).Where("user_id = ?", userID).Find(&video).Error
 }
