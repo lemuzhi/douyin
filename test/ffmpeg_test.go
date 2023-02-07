@@ -7,6 +7,7 @@ import (
 	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"io"
 	"os"
+	"os/exec"
 	"testing"
 )
 
@@ -33,4 +34,23 @@ func exampleReadFrameAsJpeg(inFileName string, frameNum int) io.Reader {
 		panic(err)
 	}
 	return buf
+}
+
+func TestFfmpegCmd(t *testing.T) {
+	cmd := newCmd("ep1.jpg", "../public/1c3c13c2e0c6bd95213377ff07e8dbd2.mp4")
+
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err)
+	}
+}
+
+func newCmd(imageFile, videoFile string) *exec.Cmd {
+	return exec.Command("C:\\Users\\muzhi\\Desktop\\douyin\\third_party\\ffmpeg.exe",
+		"-i", videoFile, //视频路径
+		"-r", "1",
+		"-vframes", "1",
+		"-q:v", "2",
+		"-f", "image2",
+		imageFile,
+	)
 }

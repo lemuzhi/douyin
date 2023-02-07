@@ -21,7 +21,8 @@ func InitRouter(r *gin.Engine) {
 	//公开的，不需要鉴权的路由
 	PublicRouter := r.Group("/douyin")
 	{
-		PublicRouter.GET("/feed/", controller.Feed)
+		//PublicRouter.GET("/feed/", controller.Feed)
+		PublicRouter.GET("/feed/", controller.GetFeedList)
 		PublicRouter.POST("/user/login/", controller.Login)
 		PublicRouter.POST("/user/register/", controller.Register)
 	}

@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  douyin-api:
+    build: .
+    #    image: blog-server #对应自己构建的image，名称自定义
+    #    container_name: blog-server #对应自己构建的image，名称自定义
+    command: --default-authentication-plugin=mysql_native_password #解决外部无法访问
+    ports:
+      - 8080:8080
+    volumes:
+      - "./volumes/config.toml:/go/src/byte-applets-api/config.toml"
