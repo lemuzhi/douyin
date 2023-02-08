@@ -13,22 +13,7 @@ RUN go env -w GO111MODULE=on \
 #    && go mod tidy \
     && go build -o server .
 
+RUN chmod +x ./third_party/ffmpeg.exe
+
 EXPOSE 8080
 ENTRYPOINT ./server
-
-#ENV GO111MODULE=on \
-#    CGO_ENABLED=0 \
-#    GOOS=linux \
-#    GOARCH=amd64 \
-#        GOPROXY="https://goproxy.cn,direct"
-#
-#MAINTAINER "lemuzhi"
-#
-#WORKDIR /go/src/byte-applets-api
-#
-#COPY . .
-#RUN go get -d -v ./...
-#RUN go install -v ./...
-#
-#EXPOSE 12345:12345
-#CMD ["byte-applets-api"]
