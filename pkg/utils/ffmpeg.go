@@ -3,6 +3,7 @@ package utils
 import (
 	"log"
 	"os/exec"
+	"runtime"
 )
 
 //func FfmpegCoverJpeg(playUrl, coverUrl string, frameNum int) {
@@ -27,7 +28,21 @@ import (
 //}
 
 func RunFfmpegCoverJpeg(videoUrl, coverUrl string) {
-	cmd := exec.Command("./third_party/ffmpeg.exe",
+
+	var ffmpegPath string
+
+	//获取操作系统类型
+	sysType := runtime.GOOS
+	switch sysType {
+	case "linux":
+		ffmpegPath = "./third_party/ffmpeg"
+	case "windows":
+		ffmpegPath = "./third_party/ffmpeg.exe"
+	default:
+		ffmpegPath = "./third_party/ffmpeg"
+	}
+
+	cmd := exec.Command(ffmpegPath,
 		"-i", videoUrl, //视频路径
 		"-r", "1", //每秒提取的帧数
 		"-vframes", "1", //抽取帧数，抽取1张
