@@ -33,7 +33,11 @@ func InitRouter(r *gin.Engine) {
 		PrivateRouter.GET("/user/", controller.GetUserInfo)
 		PrivateRouter.GET("/publish/list/", controller.PublishList)
 		PrivateRouter.POST("/publish/action/", controller.PublishAction)
-		// 互动接口
+		// 互动-点赞相关
 		PrivateRouter.POST("/favorite/action/", controller.FavoriteAction)
+		PrivateRouter.POST("/favorite/list/", controller.FavoriteListAction)
+		// 互动-评论相关
+		PrivateRouter.POST("/comment/action/", controller.CommentAction)
+
 	}
 }
