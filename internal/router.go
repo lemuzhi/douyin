@@ -35,9 +35,10 @@ func InitRouter(r *gin.Engine) {
 		PrivateRouter.POST("/publish/action/", controller.PublishAction)
 		// 互动-点赞相关
 		PrivateRouter.POST("/favorite/action/", controller.FavoriteAction)
-		PrivateRouter.POST("/favorite/list/", controller.FavoriteListAction)
+		PrivateRouter.GET("/favorite/list/", controller.FavoriteListAction)
 		// 互动-评论相关
 		PrivateRouter.POST("/comment/action/", controller.CommentAction)
+		PrivateRouter.GET("/comment/list/", controller.CommentListAction)
 
 	}
 }

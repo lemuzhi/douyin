@@ -11,7 +11,6 @@ import (
  author: wubo
 */
 
-// FavoriteAction 点赞操作接口
 func FavoriteAction(c *gin.Context) {
 	params := request.FavoriteRequest{}
 	send := errcode.New(c)
@@ -33,7 +32,6 @@ func FavoriteAction(c *gin.Context) {
 }
 
 func FavoriteListAction(c *gin.Context) {
-	//TODO
 	params := request.FavoriteListRequest{}
 	send := errcode.New(c)
 	err := c.ShouldBindQuery(&params)

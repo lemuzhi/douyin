@@ -5,10 +5,9 @@ import (
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
 	"errors"
-	"fmt"
 )
 
-func (svc *Service) CommentAction(params request.CommentRequest, userId int64) (res response.CommentResponse, err error) {
+func (svc *Service) CommentAction(params request.CommentRequest, userId int64) (resp response.CommentResponse, err error) {
 
 	/*
 	   根据评论的操作类型进行相应的操作
@@ -22,34 +21,82 @@ func (svc *Service) CommentAction(params request.CommentRequest, userId int64) (
 		comment, user, err1 := svc.dao.AddComment(userId, params.VideoId, params.CommentText)
 		err = err1
 
-		//user1 := response.User{
-		//	ID: user.ID,
-		//	Name: user.Username,
-		//	FollowCount: user.FollowCount,
-		//	FollowerCount: user.FollowerCount,
-		//}
+		uResp := response.User{
+			ID:            user.ID,
+			Name:          user.Username,
+			FollowCount:   user.FollowCount,
+			FollowerCount: user.FollowerCount,
+			IsFollow:      true,
+		}
 
-		com := response.Comment{
+		comResp := response.Comment{
 			Id:         int64(comment.ID),
 			Content:    comment.Content,
-			User:       user,
+			User:       uResp,
 			CreateDate: comment.CreatedAt.Format("01-02"), //按照mm-dd格式
 		}
 
-		res = response.CommentResponse{
+		resp = response.CommentResponse{
 			Response: errcode.NewResponse(errcode.OK),
-			Comment:  com,
+			Comment:  comResp,
 		}
 
 	} else if params.ActionType == 2 { //删除当前评论
 
-		fmt.Println("删除评论id：", params.CommentId)
 		err = svc.dao.DeleteComment(uint(params.CommentId))
 
-		res = response.CommentResponse{
+		resp = response.CommentResponse{
 			Response: errcode.NewResponse(errcode.OK),
 		}
 	}
 
 	return
+}
+func (svc *Service) CommentListAction(params request.CommentListRequest, userId int64) (response.CommentListResponse, error) {
+
+	/*
+	   获取当前视频下方的所有评论
+	*/
+
+	var commentsRsp []response.Comment
+
+	comments, err := svc.dao.GetCommentsByVideoId(params.VideoId)
+
+	for i := 0; i < len(comments); i++ {
+
+		//评论的作者信息
+		user, err1 := svc.dao.FindUserByID(uint(comments[i].UserID))
+
+		if err1 != nil {
+			return response.CommentListResponse{}, err1
+		}
+
+		followFlag, err2 := svc.dao.IsFollow(userId, comments[i].UserID)
+
+		if err2 != nil {
+			return response.CommentListResponse{}, err2
+		}
+
+		userRsp := response.User{
+			ID:            user.ID,
+			Name:          user.Username,
+			FollowCount:   user.FollowCount,
+			FollowerCount: user.FollowerCount,
+			IsFollow:      followFlag,
+		}
+
+		cRsp := response.Comment{
+			Id:         int64(comments[i].ID),
+			Content:    comments[i].Content,
+			User:       userRsp,
+			CreateDate: comments[i].CreatedAt.Format("01-02"), //按照mm-dd格式:
+		}
+
+		commentsRsp = append(commentsRsp, cRsp)
+	}
+
+	return response.CommentListResponse{
+		Response:    errcode.NewResponse(errcode.OK),
+		CommentList: commentsRsp,
+	}, err
 }

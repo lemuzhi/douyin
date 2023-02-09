@@ -34,3 +34,10 @@ func (dao *Dao) DeleteComment(commentId uint) (err error) {
 
 	return
 }
+
+func (dao *Dao) GetCommentsByVideoId(videoId int64) (comments []model.Comment, err error) {
+
+	err = dao.db.Where("video_id = ?", videoId).Find(&comments).Error
+
+	return
+}

@@ -27,3 +27,23 @@ func CommentAction(c *gin.Context) {
 
 	send.RespData(data)
 }
+
+func CommentListAction(c *gin.Context) {
+	params := request.CommentListRequest{}
+	send := errcode.New(c)
+	err := c.ShouldBindQuery(&params)
+	if err != nil {
+		send.RespFail(errcode.ErrInvalidParams)
+		return
+	}
+	//获取当前请求的用户id
+	svc := service.New(c)
+	userId := c.GetInt64("UserID")
+	data, err := svc.CommentListAction(params, userId)
+	if err != nil {
+		send.RespFailDetail(errcode.Fail, err.Error())
+		return
+	}
+
+	send.RespData(data)
+}

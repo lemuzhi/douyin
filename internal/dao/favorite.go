@@ -30,16 +30,13 @@ func (dao *Dao) FavoriteAction(userId int64, videoId int64, actionType uint8) (e
 	return
 }
 
-func (dao *Dao) FavoriteListAction(userId int64) (video model.Video, user model.User, err error) {
+func (dao *Dao) FavoriteListAction(userId int64) (videos []model.Video, err error) {
 	/*
-	   获取用户所有点过赞的视频，以及这些视频的作者
+	   获取用户所有点过赞的视频
 	*/
-	favorite := model.Favorite{}
-	result := dao.db.Where("user_id = ? ", userId).Find(&favorite)
-	err = result.Error
-	if err != nil {
-		return
-	}
+	//使用联表查询
+	err = dao.db.Raw("SELECT `video`.* from `favorite` JOIN `video` ON `favorite`.`video_id`=`video`.`id`  where `favorite`.`user_id`= ?", userId).Scan(&videos).Error
+	//var favorites []model.Favorite
 
 	return
 }
