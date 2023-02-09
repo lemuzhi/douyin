@@ -6,7 +6,6 @@ import (
 	"douyin/pkg/upload"
 	"douyin/pkg/utils"
 	"errors"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"mime/multipart"
@@ -30,7 +29,8 @@ func (svc *Service) PublishAction(c *gin.Context, file *multipart.FileHeader) er
 	coverTitle := upload.GetFileName(videoTitle) + ".jpeg"
 	coverUrl := filepath + coverTitle //存放封面的相对路径
 
-	utils.FfmpegCoverJpeg(videoUrl, coverUrl, 5)
+	//utils.FfmpegCoverJpeg(videoUrl, coverUrl, 5)
+	utils.RunFfmpegCoverJpeg(videoUrl, coverUrl)
 
 	return svc.dao.PublishAction(c.GetInt64("UserID"), c.PostForm("title"), addr+videoTitle, addr+coverTitle)
 }
@@ -40,9 +40,6 @@ func (svc *Service) PublishList(id string) (*response.PublishListResponse, error
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("视频")
-	fmt.Println(videoList)
 
 	data := response.PublishListResponse{
 		Response:  errcode.NewResponse(errcode.OK),
