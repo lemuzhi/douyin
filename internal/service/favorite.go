@@ -25,6 +25,7 @@ func (svc *Service) FavoriteListAction(params request.FavoriteListRequest) (resp
 	for i := 0; i < len(videos); i++ {
 		// 获取视频的作者信息
 		user, err1 := svc.dao.FindUserByID(uint(videos[i].UserID))
+
 		if err1 != nil {
 			return response.FavoriteListResponse{}, err1
 		}
@@ -34,7 +35,6 @@ func (svc *Service) FavoriteListAction(params request.FavoriteListRequest) (resp
 		if err2 != nil {
 			return response.FavoriteListResponse{}, err2
 		}
-
 		userRsp := response.User{
 			ID:            user.ID,
 			Name:          user.Username,
@@ -42,7 +42,6 @@ func (svc *Service) FavoriteListAction(params request.FavoriteListRequest) (resp
 			FollowerCount: user.FollowerCount,
 			IsFollow:      followFlag,
 		}
-
 		vRep := response.VideoResponse{
 			ID:            videos[i].ID,
 			Author:        userRsp,
