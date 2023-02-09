@@ -27,12 +27,19 @@ func InitRouter(r *gin.Engine) {
 		PublicRouter.POST("/user/register/", controller.Register)
 	}
 
-	//私密的，需要减权的路由
+	//私密的，需要鉴权的路由
 	PrivateRouter := r.Group("/douyin")
 	PrivateRouter.Use(middleware.JWT())
 	{
 		PrivateRouter.GET("/user/", controller.GetUserInfo)
 		PrivateRouter.GET("/publish/list/", controller.PublishList)
 		PrivateRouter.POST("/publish/action/", controller.PublishAction)
+		// 互动-点赞相关
+		PrivateRouter.POST("/favorite/action/", controller.FavoriteAction)
+		PrivateRouter.GET("/favorite/list/", controller.FavoriteListAction)
+		// 互动-评论相关
+		PrivateRouter.POST("/comment/action/", controller.CommentAction)
+		PrivateRouter.GET("/comment/list/", controller.CommentListAction)
+
 	}
 }
