@@ -3,8 +3,9 @@ package internal
 import (
 	"douyin/internal/controller"
 	"douyin/internal/middleware"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func InitRouter(r *gin.Engine) {
@@ -34,12 +35,16 @@ func InitRouter(r *gin.Engine) {
 		PrivateRouter.GET("/user/", controller.GetUserInfo)
 		PrivateRouter.GET("/publish/list/", controller.PublishList)
 		PrivateRouter.POST("/publish/action/", controller.PublishAction)
+
 		// 互动-点赞相关
 		PrivateRouter.POST("/favorite/action/", controller.FavoriteAction)
 		PrivateRouter.GET("/favorite/list/", controller.FavoriteListAction)
 		// 互动-评论相关
 		PrivateRouter.POST("/comment/action/", controller.CommentAction)
 		PrivateRouter.GET("/comment/list/", controller.CommentListAction)
+
+		PrivateRouter.POST("/relation/action/", controller.RelationAction)
+		PrivateRouter.GET("/relation/follow/list/", controller.FollowList)
 
 	}
 }
