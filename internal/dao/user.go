@@ -5,6 +5,10 @@ import (
 	"log"
 )
 
+func (dao *Dao) Register(user *model.User) (uint, error) {
+	return user.ID, dao.db.Create(&user).Error
+}
+
 func (dao *Dao) Login(username string) (user *model.User, err error) {
 	return user, dao.db.Where("username = ?", username).First(&user).Error
 }
@@ -17,4 +21,16 @@ func (dao *Dao) GetUserInfo(id int64) (model.User, error) {
 		return user, err
 	}
 	return user, nil
+}
+
+func (dao *Dao) FindUserByID(userID uint) (user model.User, err error) {
+	return user, dao.db.Select("id", "username", "follow_count", "follower_count").Where("id = ?", userID).Find(&user).Error
+}
+
+func (dao *Dao) FindUserByName(name string) (user model.User, err error) {
+	return user, dao.db.Where("username = ?", name).Find(&user).Error
+}
+
+func (dao *Dao) FindUserIdByName(name string) (user model.User, err error) {
+	return user, dao.db.Select("id").Where("username = ?", name).First(&user).Error
 }

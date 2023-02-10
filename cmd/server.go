@@ -4,6 +4,7 @@ import (
 	"douyin/initialize"
 	"douyin/internal"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"time"
 )
 
@@ -16,20 +17,20 @@ func RunServer() error {
 	time.Local = loc
 
 	//初始化配置
-	config := initialize.InitConfig("./config/config.toml")
+	initialize.InitConfig("./config/config.toml")
 
 	//初始化mysql
-	initialize.InitMysql(config)
+	initialize.InitMysql()
 
 	//初始化redis
-	initialize.InitRedis(config)
+	initialize.InitRedis()
 
 	//设置gin的启动模式
-	gin.SetMode(config.GetString("gin.mode"))
+	gin.SetMode(viper.GetString("gin.mode"))
 
 	r := gin.Default()
 
 	internal.InitRouter(r)
 
-	return r.Run(config.GetString("gin.addr"))
+	return r.Run(viper.GetString("gin.addr"))
 }

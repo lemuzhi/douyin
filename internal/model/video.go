@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Video struct {
 	gorm.Model
-	Identity      string     `json:"identity" gorm:"index:,unique;type:varchar(20);comment:视频唯一标识"`
+	//Identity      string     `json:"identity" gorm:"index:,unique;type:varchar(20);comment:视频唯一标识"`
 	Title         string     `json:"title" gorm:"index;type:varchar(256);comment:视频标题"`
 	PlayUrl       string     `json:"play_url" gorm:"type:varchar(128);comment:视频播放地址"`
 	CoverUrl      string     `json:"cover_url" gorm:"type:varchar(128);comment:视频封面地址"`

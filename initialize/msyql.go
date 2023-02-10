@@ -26,15 +26,15 @@ func migrate(db *gorm.DB) error {
 }
 
 // InitMysql 初始化连接mysql
-func InitMysql(config *viper.Viper) {
+func InitMysql() {
 	//dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?%s",
-		config.GetString("mysql.username"),
-		config.GetString("mysql.password"),
-		config.GetString("mysql.addr"),
-		config.GetString("mysql.port"),
-		config.GetString("mysql.db"),
-		config.GetString("mysql.config"),
+		viper.GetString("mysql.username"),
+		viper.GetString("mysql.password"),
+		viper.GetString("mysql.addr"),
+		viper.GetString("mysql.port"),
+		viper.GetString("mysql.db"),
+		viper.GetString("mysql.config"),
 	)
 	var err error
 Label:
@@ -51,7 +51,7 @@ Label:
 			panic(err)
 		}
 
-		if mysqlErr.Message == fmt.Sprintf("Unknown database '%s'", config.GetString("mysql.db")) {
+		if mysqlErr.Message == fmt.Sprintf("Unknown database '%s'", viper.GetString("mysql.db")) {
 			db, errs := sql.Open("mysql", strings.SplitAfter(dsn, "/")[0])
 			if errs != nil {
 				log.Println("db Open error: ", errs)
@@ -59,7 +59,7 @@ Label:
 			if errs = db.Ping(); errs != nil {
 				log.Println("db Ping error: ", errs)
 			}
-			createSql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;", config.GetString("mysql.db"))
+			createSql := fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s DEFAULT CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_general_ci;", viper.GetString("mysql.db"))
 			_, errs = db.Exec(createSql)
 			if errs != nil {
 				log.Panic("db Exec error: ", errs)
