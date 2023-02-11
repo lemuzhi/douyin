@@ -31,7 +31,7 @@ func (svc *Service) Register(params request.RegisterReq) (*response.LoginRespons
 
 	data := &response.LoginResponse{
 		Response: errcode.NewResponse(errcode.OK),
-		UserID:   int64(id),
+		UserID:   id,
 		Token:    token,
 	}
 	return data, nil
@@ -44,10 +44,12 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 		return nil, err
 	}
 
+	//验证密码
 	if !utils.VerifyPassword(user.Password, params.Password) {
 		return nil, fmt.Errorf("%v", errcode.ErrUserOrPwd)
 	}
 
+	//生成token
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
 		return nil, err
@@ -55,7 +57,7 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 
 	data := &response.LoginResponse{
 		Response: errcode.NewResponse(errcode.OK),
-		UserID:   1,
+		UserID:   user.ID,
 		Token:    token,
 	}
 	return data, nil
@@ -63,11 +65,10 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 
 func (svc *Service) GetUserInfo(params request.UserReq) *response.UserInfoResponse {
 	user, err := svc.dao.GetUserInfo(params.UserID)
-	fmt.Println("用户id是=", user.ID)
 	data := &response.UserInfoResponse{
 		User: response.User{
 			ID:            user.ID,
-			Name:          user.Nickname,
+			Name:          user.Username,
 			FollowCount:   svc.dao.FollowCount(user.ID),
 			FollowerCount: svc.dao.FollowerCount(user.ID),
 			IsFollow:      false,
