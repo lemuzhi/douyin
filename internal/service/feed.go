@@ -5,7 +5,6 @@ import (
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
-	"github.com/gin-gonic/gin"
 	"time"
 )
 
@@ -14,8 +13,8 @@ func (svc *Service) Feed() (response.FeedResponse, error) {
 	userRsp := response.User{
 		ID:            user.ID,
 		Name:          user.Nickname,
-		FollowCount:   user.FollowCount,
-		FollowerCount: user.FollowerCount,
+		FollowCount:   svc.dao.FollowCount(user.ID),
+		FollowerCount: svc.dao.FollowerCount(user.ID),
 		IsFollow:      false,
 	}
 
@@ -26,8 +25,8 @@ func (svc *Service) Feed() (response.FeedResponse, error) {
 			Author:        userRsp,
 			PlayUrl:       video.PlayUrl,
 			CoverUrl:      video.CoverUrl,
-			FavoriteCount: video.FavoriteCount,
-			CommentCount:  video.CommentCount,
+			FavoriteCount: svc.dao.FavoriteCount(video.ID),
+			CommentCount:  svc.dao.CommentCount(video.ID),
 			IsFavorite:    false,
 		},
 	}
@@ -39,7 +38,7 @@ func (svc *Service) Feed() (response.FeedResponse, error) {
 	}, err
 }
 
-func (svc *Service) GetFeedList(c *gin.Context, params *request.FeedRequest) (resp response.FeedResponse, err error) {
+func (svc *Service) GetFeedList(uid uint, params *request.FeedRequest) (resp response.FeedResponse, err error) {
 	var lastTime time.Time
 	if params.LatestTime == 0 {
 		//如果未传入时间戳，使用当前时间
@@ -48,41 +47,44 @@ func (svc *Service) GetFeedList(c *gin.Context, params *request.FeedRequest) (re
 		//对传入的时间戳进行处理
 		lastTime = time.UnixMilli(params.LatestTime)
 	}
-	userID := c.GetInt64("UserID")
 	videoList, err := svc.dao.GetFeedList(lastTime)
+
+	//得到视频列表长度
+	n := len(*videoList)
+	if n == 0 {
+		return resp, err
+	}
 
 	var isFollow, isFavorite bool
 	var video *model.Video
-
-	//以登录逻辑
-	if userID > 0 {
-		//TODO 判断用户用户是否点赞该视频，是否关注该视频的用户
-	}
-
 	var videos []*response.VideoResponse
-	for i := 0; i < len(*videoList); i++ {
+	for i := 0; i < n; i++ {
 		video = (*videoList)[i]
+		//判断用户用户是否点赞该视频，是否关注该视频的用户
+		if uid > 0 {
+			isFavorite = svc.dao.IsFavorite(uid, video.ID)
+			isFollow, _ = svc.dao.IsFollow(uid, video.User.ID)
+		}
 		videos = append(videos, &response.VideoResponse{
 			ID:    video.ID,
 			Title: video.Title,
 			Author: response.User{
 				ID:            video.User.ID,
 				Name:          video.User.Username,
-				FollowCount:   video.User.FollowCount,
-				FollowerCount: video.User.FollowerCount,
+				FollowCount:   svc.dao.FollowCount(video.User.ID),
+				FollowerCount: svc.dao.FollowerCount(video.User.ID),
 				IsFollow:      isFollow,
 			},
 			PlayUrl:       video.PlayUrl,
 			CoverUrl:      video.CoverUrl,
-			FavoriteCount: video.FavoriteCount,
-			CommentCount:  video.CommentCount,
+			FavoriteCount: int64(len(video.Favorites)),
+			CommentCount:  int64(len(video.Comments)),
 			IsFavorite:    isFavorite,
 		})
 	}
-
 	return response.FeedResponse{
 		Response:  errcode.NewResponse(errcode.OK),
 		VideoList: videos,
-		NextTime:  (*videoList)[len(*videoList)-1].CreatedAt.UnixMilli(),
+		NextTime:  (*videoList)[n-1].CreatedAt.UnixMilli(),
 	}, err
 }

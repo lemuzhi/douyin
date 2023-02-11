@@ -15,7 +15,6 @@ func (svc *Service) Register(params request.RegisterReq) (*response.LoginRespons
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("密码：", pwd)
 	user := model.User{
 		Username: params.Username,
 		Password: pwd,
@@ -64,13 +63,13 @@ func (svc *Service) Login(params request.LoginReq) (*response.LoginResponse, err
 
 func (svc *Service) GetUserInfo(params request.UserReq) *response.UserInfoResponse {
 	user, err := svc.dao.GetUserInfo(params.UserID)
-
+	fmt.Println("用户id是=", user.ID)
 	data := &response.UserInfoResponse{
 		User: response.User{
 			ID:            user.ID,
 			Name:          user.Nickname,
-			FollowCount:   user.FollowCount,
-			FollowerCount: user.FollowerCount,
+			FollowCount:   svc.dao.FollowCount(user.ID),
+			FollowerCount: svc.dao.FollowerCount(user.ID),
 			IsFollow:      false,
 		},
 	}

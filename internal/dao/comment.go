@@ -2,7 +2,7 @@ package dao
 
 import "douyin/internal/model"
 
-func (dao *Dao) AddComment(userId int64, videoId int64, commentText string) (comment model.Comment, user model.User, err error) {
+func (dao *Dao) AddComment(userId, videoId uint, commentText string) (comment model.Comment, user model.User, err error) {
 	/*
 	   添加评论并返回此条评论和评论者相关信息
 	*/
@@ -35,9 +35,15 @@ func (dao *Dao) DeleteComment(commentId uint) (err error) {
 	return
 }
 
-func (dao *Dao) GetCommentsByVideoId(videoId int64) (comments []model.Comment, err error) {
+func (dao *Dao) GetCommentsByVideoId(videoId uint) (comments []model.Comment, err error) {
 
 	err = dao.db.Where("video_id = ?", videoId).Find(&comments).Error
 
+	return
+}
+
+// CommentCount 获取视频评论数
+func (dao *Dao) CommentCount(vid uint) (count int64) {
+	dao.db.Model(&model.Comment{}).Where("video_id = ?", vid).Count(&count)
 	return
 }

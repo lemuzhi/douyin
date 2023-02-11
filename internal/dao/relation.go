@@ -31,7 +31,7 @@ func (dao *Dao) RelationAction(userID int64, beUserID int64, actionType uint8) (
 func (dao *Dao) GetFollowList(userID string) (userList []*response.User, err error) {
 	// reference from https://gorm.io/zh_CN/docs/query.html#Joins
 
-	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
+	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
 	// rows, err := dao.db.Table("follow").Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
 	if err != nil {
 		fmt.Println("GetFollowList Rows() error: ", err)
@@ -65,8 +65,8 @@ func (dao *Dao) GetFollowList(userID string) (userList []*response.User, err err
 		userList = append(userList, &response.User{
 			ID:            followCap.ID,
 			Name:          followCap.Name,
-			FollowCount:   followCap.FollowCount,
-			FollowerCount: followCap.FollowerCount,
+			FollowCount:   dao.FollowCount(followCap.ID),
+			FollowerCount: dao.FollowerCount(followCap.ID),
 			IsFollow:      isFollow,
 		})
 	}

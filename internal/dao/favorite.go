@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (dao *Dao) FavoriteAction(userId int64, videoId int64, actionType uint8) (err error) {
+func (dao *Dao) FavoriteAction(userId, videoId uint, actionType uint8) (err error) {
 	/*
 	   点赞操作 首先检查表中是否已经有当前用户对此视频的点赞记录
 	   若有 则修改此条记录 update
@@ -30,7 +30,7 @@ func (dao *Dao) FavoriteAction(userId int64, videoId int64, actionType uint8) (e
 	return
 }
 
-func (dao *Dao) FavoriteListAction(userId int64) (videos []model.Video, err error) {
+func (dao *Dao) FavoriteListAction(userId uint) (videos []model.Video, err error) {
 	/*
 	   获取用户所有点过赞的视频
 	*/
@@ -38,5 +38,11 @@ func (dao *Dao) FavoriteListAction(userId int64) (videos []model.Video, err erro
 	err = dao.db.Raw("SELECT `video`.* from `favorite` JOIN `video` ON `favorite`.`video_id`=`video`.`id`  where `favorite`.`user_id`= ?", userId).Scan(&videos).Error
 	//var favorites []model.Favorite
 
+	return
+}
+
+// FavoriteCount 获取视频点赞数
+func (dao *Dao) FavoriteCount(vid uint) (count int64) {
+	dao.db.Model(&model.Favorite{}).Where("video_id = ? AND status = ?", vid, 1).Count(&count)
 	return
 }
