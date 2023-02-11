@@ -12,9 +12,22 @@ func (svc *Service) RelationAction(c *gin.Context, params request.RelationAction
 	return svc.dao.RelationAction(c.GetInt64("UserID"), int64(params.ToUserID), uint8(params.ActionType))
 }
 
-func (svc *Service) FollowList(id string) (*response.FollowListResponse, error) {
+func (svc *Service) FollowList(params request.FollowListReq) (*response.FollowListResponse, error) {
 	// TODO: cannot use id (variable of type string) as type int64 in argument to svc.dao.GetFollowList
-	userList, err := svc.dao.GetFollowList(id)
+	userList, err := svc.dao.GetFollowList(params.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	data := response.FollowListResponse{
+		Response: errcode.NewResponse(errcode.OK),
+		UserList: userList,
+	}
+	return &data, nil
+}
+
+func (svc *Service) FollowerList(params request.FollowListReq) (*response.FollowListResponse, error) {
+	userList, err := svc.dao.GetFollowerList(params.UserID)
 	if err != nil {
 		return nil, err
 	}
