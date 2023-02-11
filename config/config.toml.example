@@ -8,7 +8,7 @@ port="3306"
 config="charset=utf8mb4&parseTime=True&loc=Local"
 db="douyin"
 username="root"
-password="Hacker.123"
+password="123456"
 
 [redis]
 addr="127.0.0.1:6379"
