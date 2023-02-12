@@ -66,7 +66,7 @@ func (svc *Service) CommentListAction(params request.CommentListRequest, userId 
 	//存储所有作者的id
 	idList := make([]uint, len(comments))
 	for i := 0; i < len(comments); i++ {
-		idList = append(idList, uint(comments[i].UserID))
+		idList = append(idList, comments[i].UserID)
 	}
 
 	// 通过 in 查询 获取视频作者信息
