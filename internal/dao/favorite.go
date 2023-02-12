@@ -36,7 +36,6 @@ func (dao *Dao) FavoriteListAction(userId int64) (videos []model.Video, err erro
 	*/
 	//使用联表查询
 	err = dao.db.Raw("SELECT `video`.* from `favorite` JOIN `video` ON `favorite`.`video_id`=`video`.`id`  where `favorite`.`user_id`= ?", userId).Scan(&videos).Error
-	//var favorites []model.Favorite
 
 	return
 }

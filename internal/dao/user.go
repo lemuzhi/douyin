@@ -34,3 +34,8 @@ func (dao *Dao) FindUserByName(name string) (user model.User, err error) {
 func (dao *Dao) FindUserIdByName(name string) (user model.User, err error) {
 	return user, dao.db.Select("id").Where("username = ?", name).First(&user).Error
 }
+
+func (dao *Dao) FindUserIdByIdList(idList []uint) (users []model.User, err error) {
+
+	return users, dao.db.Where("id IN ?", idList).Find(&users).Error
+}

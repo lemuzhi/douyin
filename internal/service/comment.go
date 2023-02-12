@@ -1,6 +1,7 @@
 package service
 
 import (
+	model "douyin/internal/model"
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
@@ -62,14 +63,32 @@ func (svc *Service) CommentListAction(params request.CommentListRequest, userId 
 
 	comments, err := svc.dao.GetCommentsByVideoId(params.VideoId)
 
+	//存储所有作者的id
+	idList := make([]uint, len(comments))
+	for i := 0; i < len(comments); i++ {
+		idList = append(idList, uint(comments[i].UserID))
+	}
+
+	// 通过 in 查询 获取视频作者信息
+	users, err0 := svc.dao.FindUserIdByIdList(idList)
+	err = err0
+
+	//封装查询到的结果
+	authorMap := make(map[uint]model.User, len(users))
+	for i := 0; i < len(users); i++ {
+		authorMap[users[i].ID] = users[i]
+	}
+
 	for i := 0; i < len(comments); i++ {
 
 		//评论的作者信息
-		user, err1 := svc.dao.FindUserByID(uint(comments[i].UserID))
+		//user, err1 := svc.dao.FindUserByID(uint(comments[i].UserID))
+		//
+		//if err1 != nil {
+		//	return response.CommentListResponse{}, err1
+		//}
 
-		if err1 != nil {
-			return response.CommentListResponse{}, err1
-		}
+		user := authorMap[uint(comments[i].UserID)]
 
 		followFlag, err2 := svc.dao.IsFollow(userId, comments[i].UserID)
 
@@ -89,7 +108,7 @@ func (svc *Service) CommentListAction(params request.CommentListRequest, userId 
 			Id:         int64(comments[i].ID),
 			Content:    comments[i].Content,
 			User:       userRsp,
-			CreateDate: comments[i].CreatedAt.Format("01-02"), //按照mm-dd格式:
+			CreateDate: comments[i].CreatedAt.Format("01-02"), //按照mm-dd格式
 		}
 
 		commentsRsp = append(commentsRsp, cRsp)
