@@ -6,12 +6,13 @@ import (
 	"douyin/pkg/errcode"
 )
 
-func (svc *Service) FavoriteAction(params request.FavoriteRequest, userId int64) (response.FavoriteResponse, error) {
+func (svc *Service) FavoriteAction(params request.FavoriteRequest, userId uint) (response.FavoriteResponse, error) {
 
 	response := response.FavoriteResponse{
 		StatusCode: errcode.OK.Code,
 		StatusMsg:  errcode.OK.Msg,
 	}
+
 	err := svc.dao.FavoriteAction(userId, params.VideoId, uint8(params.ActionType))
 	return response, err
 }
@@ -35,11 +36,12 @@ func (svc *Service) FavoriteListAction(params request.FavoriteListRequest) (resp
 		if err2 != nil {
 			return response.FavoriteListResponse{}, err2
 		}
+
 		userRsp := response.User{
 			ID:            user.ID,
 			Name:          user.Username,
-			FollowCount:   user.FollowCount,
-			FollowerCount: user.FollowerCount,
+			FollowCount:   svc.dao.FollowCount(user.ID),
+			FollowerCount: svc.dao.FollowerCount(user.ID),
 			IsFollow:      followFlag,
 		}
 		vRep := response.VideoResponse{
@@ -47,8 +49,8 @@ func (svc *Service) FavoriteListAction(params request.FavoriteListRequest) (resp
 			Author:        userRsp,
 			PlayUrl:       videos[i].PlayUrl,
 			CoverUrl:      videos[i].CoverUrl,
-			FavoriteCount: videos[i].FavoriteCount,
-			CommentCount:  videos[i].CommentCount,
+			FavoriteCount: svc.dao.FavoriteCount(videos[i].ID),
+			CommentCount:  svc.dao.CommentCount(videos[i].ID),
 			IsFavorite:    true,
 			Title:         videos[i].Title,
 		}

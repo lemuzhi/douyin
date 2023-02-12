@@ -15,7 +15,7 @@ func (dao *Dao) Login(username string) (user *model.User, err error) {
 
 func (dao *Dao) GetUserInfo(id int64) (model.User, error) {
 	var user model.User
-	err := dao.db.Where("id = ?", id).First(&user).Error
+	err := dao.db.Select("id", "username").Where("id = ?", id).First(&user).Error
 	if err != nil {
 		log.Println("GetUserInfo function query error: ", err)
 		return user, err
@@ -24,7 +24,7 @@ func (dao *Dao) GetUserInfo(id int64) (model.User, error) {
 }
 
 func (dao *Dao) FindUserByID(userID uint) (user model.User, err error) {
-	return user, dao.db.Select("id", "username", "follow_count", "follower_count").Where("id = ?", userID).Find(&user).Error
+	return user, dao.db.Select("id", "username").Where("id = ?", userID).Find(&user).Error
 }
 
 func (dao *Dao) FindUserByName(name string) (user model.User, err error) {

@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func (dao *Dao) PublishAction(userID int64, title, playUrl, coverUrl string) error {
+func (dao *Dao) PublishAction(userID uint, title, playUrl, coverUrl string) error {
 	video := model.Video{
 		Title:    title,
 		PlayUrl:  playUrl,
@@ -16,8 +16,9 @@ func (dao *Dao) PublishAction(userID int64, title, playUrl, coverUrl string) err
 	return dao.db.Create(&video).Error
 }
 
-func (dao *Dao) GetPublishList(userID string) (videoList []*response.VideoResponse, err error) {
-	rows, err := dao.db.Model(&model.Video{}).Preload("User").Where("user_id = ?", userID).Rows()
+func (dao *Dao) GetPublishList(userID, beUserID uint) (videoList []*response.VideoResponse, err error) {
+	rows, err := dao.db.Model(&model.Video{}).Select("id", "title", "play_url", "cover_url").
+		Where("user_id = ?", userID).Order("created_at DESC").Rows()
 	if err != nil {
 		fmt.Println("GetPublishList Rows() error: ", err)
 		return nil, err
@@ -26,10 +27,17 @@ func (dao *Dao) GetPublishList(userID string) (videoList []*response.VideoRespon
 	defer rows.Close()
 
 	var user model.User
-	err = dao.db.Select("id", "username", "follow_count", "follower_count").Where("id = ?", userID).Find(&user).Error
+	err = dao.db.Select("id", "username").Where("id = ?", userID).Find(&user).Error
 	if err != nil {
 		return nil, err
 	}
+
+	var isFollow bool
+	if beUserID > 0 {
+		isFollow, _ = dao.IsFollow(userID, beUserID)
+	}
+	followCount := dao.FollowCount(userID)
+	followerCount := dao.FollowerCount(beUserID)
 
 	for rows.Next() {
 		var video model.Video
@@ -46,15 +54,15 @@ func (dao *Dao) GetPublishList(userID string) (videoList []*response.VideoRespon
 			Author: response.User{
 				ID:            user.ID,
 				Name:          user.Username,
-				FollowCount:   user.FollowCount,
-				FollowerCount: user.FollowerCount,
-				IsFollow:      false,
+				FollowCount:   followCount,
+				FollowerCount: followerCount,
+				IsFollow:      isFollow,
 			},
 			PlayUrl:       video.PlayUrl,
 			CoverUrl:      video.CoverUrl,
-			FavoriteCount: video.FavoriteCount,
-			CommentCount:  video.CommentCount,
-			IsFavorite:    false,
+			FavoriteCount: dao.FavoriteCount(video.ID),
+			CommentCount:  dao.CommentCount(video.ID),
+			IsFavorite:    dao.IsFavorite(user.ID, video.ID),
 		})
 	}
 

@@ -8,5 +8,5 @@ type PublishActionRequest struct {
 
 type PublishListRequest struct {
 	Token  string `form:"token" binding:"required"`
-	UserID string `form:"user_id" binding:"required"`
+	UserID uint   `form:"user_id" binding:"required"`
 }
