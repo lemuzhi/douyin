@@ -1,6 +1,7 @@
 package service
 
 import (
+	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
 	"douyin/pkg/upload"
@@ -32,11 +33,20 @@ func (svc *Service) PublishAction(c *gin.Context, file *multipart.FileHeader) er
 	//utils.FfmpegCoverJpeg(videoUrl, coverUrl, 5)
 	utils.RunFfmpegCoverJpeg(videoUrl, coverUrl)
 
-	return svc.dao.PublishAction(c.GetInt64("UserID"), c.PostForm("title"), addr+videoTitle, addr+coverTitle)
+	return svc.dao.PublishAction(c.GetUint("UserID"), c.PostForm("title"), addr+videoTitle, addr+coverTitle)
 }
 
-func (svc *Service) PublishList(id string) (*response.PublishListResponse, error) {
-	videoList, err := svc.dao.GetPublishList(id)
+func (svc *Service) PublishList(params *request.PublishListRequest) (*response.PublishListResponse, error) {
+	var beUserID uint
+	if params.UserID > 0 {
+		claims, err := utils.ParseToken(params.Token)
+		if err != nil {
+			return nil, err
+		}
+		beUserID = claims.UserID
+	}
+
+	videoList, err := svc.dao.GetPublishList(params.UserID, beUserID)
 	if err != nil {
 		return nil, err
 	}

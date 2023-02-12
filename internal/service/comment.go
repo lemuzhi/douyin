@@ -8,7 +8,7 @@ import (
 	"errors"
 )
 
-func (svc *Service) CommentAction(params request.CommentRequest, userId int64) (resp response.CommentResponse, err error) {
+func (svc *Service) CommentAction(params request.CommentRequest, userId uint) (resp response.CommentResponse, err error) {
 
 	/*
 	   根据评论的操作类型进行相应的操作
@@ -25,8 +25,8 @@ func (svc *Service) CommentAction(params request.CommentRequest, userId int64) (
 		uResp := response.User{
 			ID:            user.ID,
 			Name:          user.Username,
-			FollowCount:   user.FollowCount,
-			FollowerCount: user.FollowerCount,
+			FollowCount:   svc.dao.FollowCount(user.ID),
+			FollowerCount: svc.dao.FollowerCount(user.ID),
 			IsFollow:      true,
 		}
 
@@ -53,7 +53,7 @@ func (svc *Service) CommentAction(params request.CommentRequest, userId int64) (
 
 	return
 }
-func (svc *Service) CommentListAction(params request.CommentListRequest, userId int64) (response.CommentListResponse, error) {
+func (svc *Service) CommentListAction(params request.CommentListRequest, userId uint) (response.CommentListResponse, error) {
 
 	/*
 	   获取当前视频下方的所有评论
@@ -99,8 +99,8 @@ func (svc *Service) CommentListAction(params request.CommentListRequest, userId 
 		userRsp := response.User{
 			ID:            user.ID,
 			Name:          user.Username,
-			FollowCount:   user.FollowCount,
-			FollowerCount: user.FollowerCount,
+			FollowCount:   svc.dao.FollowCount(user.ID),
+			FollowerCount: svc.dao.FollowerCount(user.ID),
 			IsFollow:      followFlag,
 		}
 

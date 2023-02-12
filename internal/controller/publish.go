@@ -42,7 +42,7 @@ func PublishList(c *gin.Context) {
 	}
 
 	svc := service.New(c)
-	data, err := svc.PublishList(params.UserID)
+	data, err := svc.PublishList(&params)
 	if err != nil {
 		send.RespFailDetail(errcode.Fail, err.Error())
 		return

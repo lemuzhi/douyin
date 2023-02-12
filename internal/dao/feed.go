@@ -21,9 +21,24 @@ func (dao *Dao) Feed() (video model.Video, user model.User, err error) {
 }
 
 func (dao *Dao) GetFeedList(lastTime time.Time) (videoList *[]*model.Video, err error) {
-	err = dao.db.Preload("User", func(db *gorm.DB) *gorm.DB {
-		return db.Select("id", "username", "follow_count", "follower_count")
+	err = dao.db.Debug().Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id", "username")
+	}).Preload("Comments", func(db *gorm.DB) *gorm.DB {
+		return db.Select("user_id", "video_id")
+	}).Preload("Favorites", func(db *gorm.DB) *gorm.DB {
+		return db.Select("user_id", "video_id").Where("status = ?", 1)
 	}).Where("created_at < ?", lastTime).Order("created_at DESC").Limit(limit).Find(&videoList).Error
 
 	return videoList, err
+}
+
+func (dao *Dao) IsFavorite(uid, vid uint) bool {
+	var count int64
+
+	dao.db.Model(&model.Favorite{}).Where("user_id = ? AND video_id = ? AND status = ?", uid, vid, 1).Count(&count)
+
+	if count > 0 {
+		return true
+	}
+	return false
 }
