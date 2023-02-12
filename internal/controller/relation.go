@@ -42,13 +42,33 @@ func FollowList(c *gin.Context) {
 	}
 
 	svc := service.New(c)
-	data, err := svc.FollowList(params.UserID)
-	//
-	// data, err := svc.FollowList("2")
+	data, err := svc.FollowList(params)
+	// dousheng前端有bug，user_id始终为0，已有人反应
 
 	if err != nil {
 		log.Printf("get follow list err: %s", err.Error())
-		// TODO: errcode
+		send.RespFailDetail(errcode.Fail, err.Error())
+
+		return
+	}
+
+	send.RespData(data)
+}
+
+func FollowerList(c *gin.Context) {
+	params := request.FollowListReq{}
+	send := errcode.New(c)
+	err := c.ShouldBindQuery(&params)
+	if err != nil {
+		send.RespFail(errcode.ErrInvalidParams)
+		return
+	}
+
+	svc := service.New(c)
+	data, err := svc.FollowerList(params)
+
+	if err != nil {
+		log.Printf("get follow list err: %s", err.Error())
 		send.RespFailDetail(errcode.Fail, err.Error())
 
 		return

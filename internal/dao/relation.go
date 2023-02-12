@@ -28,7 +28,7 @@ func (dao *Dao) RelationAction(userID int64, beUserID int64, actionType uint8) (
 	return
 }
 
-func (dao *Dao) GetFollowList(userID string) (userList []*response.User, err error) {
+func (dao *Dao) GetFollowList(userID int64) (userList []*response.User, err error) {
 	// reference from https://gorm.io/zh_CN/docs/query.html#Joins
 
 	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
@@ -67,6 +67,49 @@ func (dao *Dao) GetFollowList(userID string) (userList []*response.User, err err
 			Name:          followCap.Name,
 			FollowCount:   dao.FollowCount(followCap.ID),
 			FollowerCount: dao.FollowerCount(followCap.ID),
+			IsFollow:      isFollow,
+		})
+	}
+
+	return userList, nil
+}
+
+func (dao *Dao) GetFollowerList(userID int64) (userList []*response.User, err error) {
+	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.be_user_id = ?", userID).Joins("left join user on user.id = follow.user_id").Rows()
+	if err != nil {
+		fmt.Println("GetFollowList Rows() error: ", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	// 需要用tag指定列名，否则会只写入4个int
+	type FollowCap struct {
+		ID            uint   `gorm:"column:id"`
+		Name          string `gorm:"column:username"`
+		FollowCount   int64  `gorm:"column:follow_count"`
+		FollowerCount int64  `gorm:"column:follower_count"`
+		Status        uint   `gorm:"column:status"`
+	}
+
+	for rows.Next() {
+		var followCap FollowCap
+
+		err = dao.db.ScanRows(rows, &followCap)
+		if err != nil {
+			fmt.Println("dao.db.ScanRows error: ", err)
+		}
+
+		var isFollow bool = true
+		if followCap.Status == 2 {
+			isFollow = false
+		}
+
+		userList = append(userList, &response.User{
+			ID:            followCap.ID,
+			Name:          followCap.Name,
+			FollowCount:   followCap.FollowCount,
+			FollowerCount: followCap.FollowerCount,
 			IsFollow:      isFollow,
 		})
 	}
