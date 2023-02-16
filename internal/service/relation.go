@@ -9,7 +9,9 @@ import (
 )
 
 func (svc *Service) RelationAction(c *gin.Context, params request.RelationActionReq) error {
-	return svc.dao.RelationAction(c.GetInt64("UserID"), int64(params.ToUserID), uint8(params.ActionType))
+	// fmt.Println("RelationAction", c.GetInt64("UserID"), c.GetUint("UserID"))
+	// 使用 GetUint 而非 GetInt64
+	return svc.dao.RelationAction(c.GetUint("UserID"), params.ToUserID, uint8(params.ActionType))
 }
 
 func (svc *Service) FollowList(params request.FollowListReq) (*response.FollowListResponse, error) {
