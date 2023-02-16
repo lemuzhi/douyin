@@ -6,7 +6,6 @@ import (
 	"douyin/internal/service"
 	"douyin/pkg/errcode"
 	"douyin/pkg/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -42,7 +41,6 @@ func CommentListAction(c *gin.Context) {
 	}
 	svc := service.New(c)
 	data := response.CommentListResponse{}
-	fmt.Println(params.Token)
 	// 检查是否携带token
 	if params.Token == "" {
 		data, err = svc.CommentListAction(&params, 0) //用户id为0，即未登录
