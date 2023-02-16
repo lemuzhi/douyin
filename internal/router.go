@@ -46,5 +46,7 @@ func InitRouter(r *gin.Engine) {
 
 		PrivateRouter.POST("/relation/action/", controller.RelationAction)
 		PrivateRouter.GET("/relation/follow/list/", controller.FollowList)
+
+		PrivateRouter.GET("/relation/follower/list/", controller.FollowerList)
 	}
 }
