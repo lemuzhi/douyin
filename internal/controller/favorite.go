@@ -22,7 +22,7 @@ func FavoriteAction(c *gin.Context) {
 	//获取当前请求的用户id
 	svc := service.New(c)
 	userId := c.GetUint("UserID")
-	data, err := svc.FavoriteAction(params, userId)
+	data, err := svc.FavoriteAction(&params, userId)
 	if err != nil {
 		send.RespFailDetail(errcode.Fail, err.Error())
 		return
@@ -40,7 +40,7 @@ func FavoriteListAction(c *gin.Context) {
 		return
 	}
 	svc := service.New(c)
-	data, err := svc.FavoriteListAction(params)
+	data, err := svc.FavoriteListAction(&params)
 	if err != nil {
 		send.RespFailDetail(errcode.Fail, err.Error())
 		return

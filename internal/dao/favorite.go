@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (dao *Dao) FavoriteAction(userId, videoId uint, actionType uint8) (err error) {
+func (dao *Dao) FavoriteAction(userId uint, videoId uint, actionType uint8) (err error) {
 	/*
 	   点赞操作 首先检查表中是否已经有当前用户对此视频的点赞记录
 	   若有 则修改此条记录 update

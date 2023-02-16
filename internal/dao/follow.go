@@ -4,11 +4,6 @@ import "douyin/internal/model"
 
 // IsFollow 查看关注情况
 func (dao *Dao) IsFollow(userId, beUserId uint) (followFlag bool, err error) {
-	/*
-	   查看关注表
-	   若没有数据，代表没有关注
-	   若有数据，还要查看状态 1已经关注，2已经取消关注
-	*/
 	follow := model.Follow{}
 	result := dao.db.Where("user_id = ? AND be_user_id = ?", userId, beUserId).Limit(1).Find(&follow)
 	err = result.Error
