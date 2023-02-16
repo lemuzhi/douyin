@@ -18,6 +18,14 @@ func RelationAction(c *gin.Context) {
 		return
 	}
 
+	// 不应该能关注自己
+	UserID := c.GetUint("UserID")
+	BeUserID := params.ToUserID
+	if UserID == BeUserID {
+		send.RespFail(errcode.ErrInvalidParams)
+		return
+	}
+
 	svc := service.New(c)
 	err = svc.RelationAction(c, params)
 
