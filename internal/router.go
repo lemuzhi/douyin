@@ -44,9 +44,10 @@ func InitRouter(r *gin.Engine) {
 		// 互动-评论相关
 		PrivateRouter.POST("/comment/action/", controller.CommentAction)
 
+		// 社交接口
 		PrivateRouter.POST("/relation/action/", controller.RelationAction)
 		PrivateRouter.GET("/relation/follow/list/", controller.FollowList)
-
 		PrivateRouter.GET("/relation/follower/list/", controller.FollowerList)
+		PrivateRouter.GET("/relation/friend/list/", controller.FriendList)
 	}
 }
