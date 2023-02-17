@@ -2,7 +2,7 @@ package dao
 
 import "douyin/internal/model"
 
-func (dao *Dao) AddComment(userId, videoId uint, commentText string) (comment model.Comment, user model.User, err error) {
+func (dao *Dao) AddComment(userId uint, videoId uint, commentText string) (comment model.Comment, user model.User, err error) {
 	/*
 	   添加评论并返回此条评论和评论者相关信息
 	*/
@@ -17,7 +17,7 @@ func (dao *Dao) AddComment(userId, videoId uint, commentText string) (comment mo
 	}
 
 	//用户信息
-	err = dao.db.Where("id = ?", uint(userId)).First(&user).Error
+	err = dao.db.Where("id = ?", userId).First(&user).Error
 	if err != nil {
 		return
 	}

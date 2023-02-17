@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (dao *Dao) FavoriteAction(userId, videoId uint, actionType uint8) (err error) {
+func (dao *Dao) FavoriteAction(userId uint, videoId uint, actionType uint8) (err error) {
 	/*
 	   点赞操作 首先检查表中是否已经有当前用户对此视频的点赞记录
 	   若有 则修改此条记录 update
@@ -36,7 +36,6 @@ func (dao *Dao) FavoriteListAction(userId uint) (videos []model.Video, err error
 	*/
 	//使用联表查询
 	err = dao.db.Raw("SELECT `video`.* from `favorite` JOIN `video` ON `favorite`.`video_id`=`video`.`id`  where `favorite`.`user_id`= ?", userId).Scan(&videos).Error
-	//var favorites []model.Favorite
 
 	return
 }

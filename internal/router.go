@@ -26,6 +26,8 @@ func InitRouter(r *gin.Engine) {
 		PublicRouter.GET("/feed/", controller.GetFeedList)
 		PublicRouter.POST("/user/login/", controller.Login)
 		PublicRouter.POST("/user/register/", controller.Register)
+		// 未登录用户也可查看评论
+		PublicRouter.GET("/comment/list/", controller.CommentListAction)
 	}
 
 	//私密的，需要鉴权的路由
@@ -41,7 +43,6 @@ func InitRouter(r *gin.Engine) {
 		PrivateRouter.GET("/favorite/list/", controller.FavoriteListAction)
 		// 互动-评论相关
 		PrivateRouter.POST("/comment/action/", controller.CommentAction)
-		PrivateRouter.GET("/comment/list/", controller.CommentListAction)
 
 		PrivateRouter.POST("/relation/action/", controller.RelationAction)
 		PrivateRouter.GET("/relation/follow/list/", controller.FollowList)

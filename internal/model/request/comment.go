@@ -11,6 +11,6 @@ type CommentRequest struct {
 
 // CommentListRequest  获取视频的所有评论
 type CommentListRequest struct {
-	Token   string `form:"token" json:"token" binding:"required"`
+	Token   string `form:"token" json:"token" binding:"omitempty"`
 	VideoId uint   `form:"video_id" json:"video_id " binding:"required"`
 }
