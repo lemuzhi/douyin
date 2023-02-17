@@ -31,7 +31,7 @@ func (dao *Dao) RelationAction(userID uint, beUserID uint, actionType uint8) (er
 
 func (dao *Dao) GetFollowList(userID uint) (userList []*response.User, err error) {
 	// reference from https://gorm.io/zh_CN/docs/query.html#Joins
-
+	// TODO: 查的时候应该只查 status = 1 的 ? 但是文档的示例图片是有查出取消了关注的
 	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
 	// rows, err := dao.db.Table("follow").Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
 	if err != nil {
@@ -77,7 +77,7 @@ func (dao *Dao) GetFollowList(userID uint) (userList []*response.User, err error
 
 func (dao *Dao) GetFollowerList(userID uint) (userList []*response.User, err error) {
 	// rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.be_user_id = ?", userID).Joins("left join user on user.id = follow.user_id").Rows()
-	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.be_user_id = ?", userID).Joins("left join user on user.id = follow.user_id").Rows()
+	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username").Where("follow.be_user_id = ? AND follow.status = 1", userID).Joins("left join user on user.id = follow.user_id").Rows()
 	if err != nil {
 		fmt.Println("GetFollowList Rows() error: ", err)
 		return nil, err
@@ -102,19 +102,64 @@ func (dao *Dao) GetFollowerList(userID uint) (userList []*response.User, err err
 			fmt.Println("dao.db.ScanRows error: ", err)
 		}
 
-		var isFollow bool
-		isFollow, err = dao.IsFollow(userID, followCap.ID)
-		if err != nil {
-			fmt.Println("dao.IsFollow userID=", userID, ", beUserId=", followCap.ID, " error: ", err)
-			return nil, err
-		}
+		// var isFollow bool
+		// isFollow, err = dao.IsFollow(userID, followCap.ID)
+		// if err != nil {
+		// 	fmt.Println("dao.IsFollow userID=", userID, ", beUserId=", followCap.ID, " error: ", err)
+		// 	return nil, err
+		// }
+
 		// 这里的IsFollow应该是当前登录用户本人是否关注了这个粉丝
 		userList = append(userList, &response.User{
 			ID:            followCap.ID,
 			Name:          followCap.Name,
 			FollowCount:   dao.FollowCount(followCap.ID),
 			FollowerCount: dao.FollowerCount(followCap.ID),
-			IsFollow:      isFollow,
+			IsFollow:      true,
+		})
+	}
+
+	return userList, nil
+}
+
+func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err error) {
+	// SELECT f1.be_user_id FROM follow f1 join follow f2 where f1.user_id = 1 and f1.be_user_id = f2.user_id and f2.be_user_id = 1;
+	// SELECT u.id, u.username FROM follow f1 JOIN follow f2 ON f1.status = 1 AND f2.status = 1 AND f1.user_id = 1 AND f1.be_user_id = f2.user_id AND f2.be_user_id = 1 JOIN user u WHERE u.id = f1.be_user_id;
+
+	rows, err := dao.db.Raw("SELECT u.id, u.username FROM follow f1 JOIN follow f2 ON f1.status = 1 AND f2.status = 1 AND f1.user_id = ? AND f1.be_user_id = f2.user_id AND f2.be_user_id = ? JOIN user u WHERE u.id = f1.be_user_id", userID, userID).Rows()
+
+	if err != nil {
+		fmt.Println("GetFollowList Rows() error: ", err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	type FriendCap struct {
+		ID   uint   `gorm:"column:id"`
+		Name string `gorm:"column:username"`
+	}
+
+	for rows.Next() {
+		var friendCap FriendCap
+
+		err = dao.db.ScanRows(rows, &friendCap)
+		if err != nil {
+			fmt.Println("dao.db.ScanRows error: ", err)
+		}
+
+		// TODO: 头像 与 message 放的是假数据
+		userList = append(userList, &response.FriendUser{
+			User: response.User{
+				ID:            friendCap.ID,
+				Name:          friendCap.Name,
+				FollowCount:   dao.FollowCount(friendCap.ID),
+				FollowerCount: dao.FollowerCount(friendCap.ID),
+				IsFollow:      true,
+			},
+			Avatar:  "https://c-ssl.duitang.com/uploads/blog/202102/08/20210208200511_45cb8.jpg",
+			Message: "这是一条测试信息",
+			MsgType: 0,
 		})
 	}
 

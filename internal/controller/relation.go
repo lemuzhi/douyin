@@ -84,3 +84,25 @@ func FollowerList(c *gin.Context) {
 
 	send.RespData(data)
 }
+
+func FriendList(c *gin.Context) {
+	params := request.FriendListReq{}
+	send := errcode.New(c)
+	err := c.ShouldBindQuery(&params)
+	if err != nil {
+		send.RespFail(errcode.ErrInvalidParams)
+		return
+	}
+
+	svc := service.New(c)
+	data, err := svc.FriendList(params)
+
+	if err != nil {
+		log.Printf("get friend list err: %s", err.Error())
+		send.RespFailDetail(errcode.Fail, err.Error())
+
+		return
+	}
+
+	send.RespData(data)
+}

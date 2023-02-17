@@ -6,12 +6,17 @@ type RelationActionReq struct {
 	ActionType int32  `form:"action_type" json:"action_type" binding:"required"`
 }
 
-type FollowListReq struct {
+// TODO: 这种 UserID + Token的request 封装一下？
+
+type CommonReq struct {
 	UserID uint   `form:"user_id" json:"user_id" binding:"required"`
 	Token  string `form:"token" json:"token" binding:"required"`
 }
 
-// type FollowListReq struct {
-// 	Token  string `form:"token" json:"token" binding:"required"`
-// 	UserID string `form:"user_id" json:"user_id" binding:"required"`
-// }
+type FollowListReq struct {
+	CommonReq
+}
+
+type FriendListReq struct {
+	CommonReq
+}
