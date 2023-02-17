@@ -23,6 +23,13 @@ func (svc *Service) FavoriteListAction(params *request.FavoriteListRequest) (res
 
 	var videosRsp []response.VideoResponse
 
+	if len(videos) == 0 {
+		return response.FavoriteListResponse{
+			Response:  errcode.NewResponse(errcode.OK),
+			VideoList: videosRsp,
+		}, err
+	}
+
 	//存储所有作者的id
 	idList := make([]uint, len(videos))
 	for i := 0; i < len(videos); i++ {
