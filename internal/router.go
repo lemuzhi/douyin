@@ -49,5 +49,9 @@ func InitRouter(r *gin.Engine) {
 		PrivateRouter.GET("/relation/follow/list/", controller.FollowList)
 		PrivateRouter.GET("/relation/follower/list/", controller.FollowerList)
 		PrivateRouter.GET("/relation/friend/list/", controller.FriendList)
+
+		//消息
+		PrivateRouter.GET("/message/chat/", controller.MessageList)
+		PrivateRouter.POST("/message/action/", controller.MessageAction)
 	}
 }
