@@ -48,19 +48,27 @@ func (svc *Service) FavoriteListAction(params *request.FavoriteListRequest) (res
 	//初始化返回参数
 	for i := 0; i < len(videos); i++ {
 		user := authorMap[videos[i].UserID]
-		//查看当前用户是否关注了此用户isFollow
+		//查看当前用户是否关注了此作者isFollow
 		followFlag, err2 := svc.dao.IsFollow(params.UserId, videos[i].UserID)
 
 		if err2 != nil {
 			return response.FavoriteListResponse{}, err2
 		}
 
+		// 获取作者的作品数量（发布的视频数量）和视频id列表
+		wCount, videoList := svc.dao.WorkCount(user.ID)
 		userRsp := response.User{
-			ID:            user.ID,
-			Name:          user.Username,
-			FollowCount:   svc.dao.FollowCount(user.ID),
-			FollowerCount: svc.dao.FollowerCount(user.ID),
-			IsFollow:      followFlag,
+			ID:              user.ID,
+			Name:            user.Username,
+			FollowCount:     svc.dao.FollowCount(user.ID),
+			FollowerCount:   svc.dao.FollowerCount(user.ID),
+			IsFollow:        followFlag,
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			Signature:       user.Signature,
+			TotalFavorited:  svc.dao.TotalFavorited(videoList),
+			WorkCount:       wCount,
+			FavoriteCount:   svc.dao.UserFavoriteCount(user.ID),
 		}
 		vRep := response.VideoResponse{
 			ID:            videos[i].ID,
@@ -69,7 +77,7 @@ func (svc *Service) FavoriteListAction(params *request.FavoriteListRequest) (res
 			CoverUrl:      videos[i].CoverUrl,
 			FavoriteCount: svc.dao.FavoriteCount(videos[i].ID),
 			CommentCount:  svc.dao.CommentCount(videos[i].ID),
-			IsFavorite:    true,
+			IsFavorite:    true, // 必定是点赞了的视频
 			Title:         videos[i].Title,
 		}
 		videosRsp = append(videosRsp, vRep)

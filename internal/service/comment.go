@@ -44,7 +44,7 @@ func (svc *Service) CommentAction(params *request.CommentRequest, userId uint) (
 
 	} else if params.ActionType == 2 { //删除当前评论
 
-		err = svc.dao.DeleteComment(uint(params.CommentId))
+		err = svc.dao.DeleteComment(params.CommentId)
 
 		resp = response.CommentResponse{
 			Response: errcode.NewResponse(errcode.OK),
@@ -63,12 +63,12 @@ func (svc *Service) CommentListAction(params *request.CommentListRequest, userId
 
 	comments, err := svc.dao.GetCommentsByVideoId(params.VideoId)
 
-	//if len(comments) == 0 {
-	//	return response.CommentListResponse{
-	//		Response:    errcode.NewResponse(errcode.OK),
-	//		CommentList: commentsRsp,
-	//	}, err
-	//}
+	if len(comments) == 0 {
+		return response.CommentListResponse{
+			Response:    errcode.NewResponse(errcode.OK),
+			CommentList: commentsRsp,
+		}, err
+	}
 
 	//存储所有作者的id
 	idList := make([]uint, len(comments))
@@ -99,12 +99,20 @@ func (svc *Service) CommentListAction(params *request.CommentListRequest, userId
 			followFlag = false
 		}
 
+		// 获取作者的作品数量（发布的视频数量）和视频id列表
+		wCount, videoList := svc.dao.WorkCount(user.ID)
 		userRsp := response.User{
-			ID:            user.ID,
-			Name:          user.Username,
-			FollowCount:   svc.dao.FollowCount(user.ID),
-			FollowerCount: svc.dao.FollowerCount(user.ID),
-			IsFollow:      followFlag,
+			ID:              user.ID,
+			Name:            user.Username,
+			FollowCount:     svc.dao.FollowCount(user.ID),
+			FollowerCount:   svc.dao.FollowerCount(user.ID),
+			IsFollow:        followFlag,
+			Avatar:          user.Avatar,
+			BackgroundImage: user.BackgroundImage,
+			Signature:       user.Signature,
+			TotalFavorited:  svc.dao.TotalFavorited(videoList),
+			WorkCount:       wCount,
+			FavoriteCount:   svc.dao.UserFavoriteCount(user.ID),
 		}
 
 		cRsp := response.Comment{

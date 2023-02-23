@@ -37,7 +37,7 @@ func (dao *Dao) DeleteComment(commentId uint) (err error) {
 
 func (dao *Dao) GetCommentsByVideoId(videoId uint) (comments []model.Comment, err error) {
 
-	err = dao.db.Where("video_id = ?", videoId).Find(&comments).Error
+	err = dao.db.Where("video_id = ?", videoId).Order("created_at desc").Find(&comments).Error
 
 	return
 }
