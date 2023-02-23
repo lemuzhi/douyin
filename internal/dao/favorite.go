@@ -35,7 +35,7 @@ func (dao *Dao) FavoriteListAction(userId uint) (videos []model.Video, err error
 	   获取用户所有点过赞的视频
 	*/
 	//使用联表查询
-	err = dao.db.Raw("SELECT `video`.* from `favorite` JOIN `video` ON `favorite`.`video_id`=`video`.`id`  where `favorite`.`user_id`= ?", userId).Scan(&videos).Error
+	err = dao.db.Raw("SELECT `video`.* from `favorite` JOIN `video` ON `favorite`.`video_id`=`video`.`id`  WHERE `favorite`.`user_id`= ? ORDER BY `favorite`.`created_at` DESC", userId).Scan(&videos).Error
 
 	return
 }

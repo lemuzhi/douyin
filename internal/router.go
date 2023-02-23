@@ -23,7 +23,9 @@ func InitRouter(r *gin.Engine) {
 	PublicRouter := r.Group("/douyin")
 	{
 		//PublicRouter.GET("/feed/", controller.Feed)
+		//视频流接口
 		PublicRouter.GET("/feed/", controller.GetFeedList)
+		//用户登录和注册接口
 		PublicRouter.POST("/user/login/", controller.Login)
 		PublicRouter.POST("/user/register/", controller.Register)
 		// 未登录用户也可查看评论
@@ -34,8 +36,11 @@ func InitRouter(r *gin.Engine) {
 	PrivateRouter := r.Group("/douyin")
 	PrivateRouter.Use(middleware.JWT())
 	{
+		//用户信息
 		PrivateRouter.GET("/user/", controller.GetUserInfo)
+		//视频列表
 		PrivateRouter.GET("/publish/list/", controller.PublishList)
+		//视频发布
 		PrivateRouter.POST("/publish/action/", controller.PublishAction)
 
 		// 互动-点赞相关

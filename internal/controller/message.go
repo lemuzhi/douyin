@@ -14,8 +14,7 @@ func MessageList(c *gin.Context) {
 	send := errcode.New(c)
 	err1 := c.ShouldBindQuery(&params)
 	if err1 != nil {
-
-		send.RespFail(errcode.ErrInvalidParams) //？
+		send.RespFail(errcode.ErrInvalidParams)
 		return
 	}
 
@@ -23,7 +22,7 @@ func MessageList(c *gin.Context) {
 	UserId := c.GetUint("UserID")
 	data, err2 := svc.MessageListAction(&params, UserId)
 	if err2 != nil {
-		send.RespFail(errcode.ErrInvalidParams)
+		send.RespFail(errcode.Fail)
 		return
 	}
 	send.RespData(data)

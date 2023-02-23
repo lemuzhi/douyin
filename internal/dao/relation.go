@@ -32,8 +32,7 @@ func (dao *Dao) RelationAction(userID uint, beUserID uint, actionType uint8) (er
 func (dao *Dao) GetFollowList(userID uint) (userList []*response.User, err error) {
 	// reference from https://gorm.io/zh_CN/docs/query.html#Joins
 	// TODO: 查的时候应该只查 status = 1 的 ? 但是文档的示例图片是有查出取消了关注的
-	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
-	// rows, err := dao.db.Table("follow").Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.user_id = ?", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
+	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.user_id = ? AND follow.status = 1", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
 	if err != nil {
 		fmt.Println("GetFollowList Rows() error: ", err)
 		return nil, err
@@ -76,7 +75,6 @@ func (dao *Dao) GetFollowList(userID uint) (userList []*response.User, err error
 }
 
 func (dao *Dao) GetFollowerList(userID uint) (userList []*response.User, err error) {
-	// rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow_count, follower_count, follow.status").Where("follow.be_user_id = ?", userID).Joins("left join user on user.id = follow.user_id").Rows()
 	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username").Where("follow.be_user_id = ? AND follow.status = 1", userID).Joins("left join user on user.id = follow.user_id").Rows()
 	if err != nil {
 		fmt.Println("GetFollowList Rows() error: ", err)
@@ -102,20 +100,18 @@ func (dao *Dao) GetFollowerList(userID uint) (userList []*response.User, err err
 			fmt.Println("dao.db.ScanRows error: ", err)
 		}
 
-		// var isFollow bool
-		// isFollow, err = dao.IsFollow(userID, followCap.ID)
-		// if err != nil {
-		// 	fmt.Println("dao.IsFollow userID=", userID, ", beUserId=", followCap.ID, " error: ", err)
-		// 	return nil, err
-		// }
-
 		// 这里的IsFollow应该是当前登录用户本人是否关注了这个粉丝
+		isFollow, err := dao.IsFollow(userID, followCap.ID)
+		if err != nil {
+			fmt.Println("dao.IsFollow userID=", userID, ", beUserId=", followCap.ID, " error: ", err)
+		}
+
 		userList = append(userList, &response.User{
 			ID:            followCap.ID,
 			Name:          followCap.Name,
 			FollowCount:   dao.FollowCount(followCap.ID),
 			FollowerCount: dao.FollowerCount(followCap.ID),
-			IsFollow:      true,
+			IsFollow:      isFollow,
 		})
 	}
 
@@ -139,6 +135,7 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 		Avatar string `gorm:"column:avatar"`
 	}
 
+	var msg model.Message
 	for rows.Next() {
 		var friendCap FriendCap
 
@@ -146,7 +143,7 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 		if err != nil {
 			fmt.Println("dao.db.ScanRows error: ", err)
 		}
-
+		_ = dao.db.Debug().Where("from_user_id = ? AND to_user_id = ?", friendCap.ID, userID).Order("create_time DESC").Take(&msg).Error
 		userList = append(userList, &response.FriendUser{
 			User: response.User{
 				ID:            friendCap.ID,
@@ -156,7 +153,7 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 				IsFollow:      true,
 			},
 			Avatar:  friendCap.Avatar,
-			Message: "这是一条测试信息",
+			Message: msg.Content,
 			MsgType: 0,
 		})
 	}
