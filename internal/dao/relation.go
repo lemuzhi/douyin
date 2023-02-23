@@ -29,93 +29,18 @@ func (dao *Dao) RelationAction(userID uint, beUserID uint, actionType uint8) (er
 	return
 }
 
-func (dao *Dao) GetFollowList(userID uint) (userList []*response.User, err error) {
-	// reference from https://gorm.io/zh_CN/docs/query.html#Joins
-	// TODO: 查的时候应该只查 status = 1 的 ? 但是文档的示例图片是有查出取消了关注的
-	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username, follow.status").Where("follow.user_id = ? AND follow.status = 1", userID).Joins("left join user on user.id = follow.be_user_id").Rows()
-	if err != nil {
-		fmt.Println("GetFollowList Rows() error: ", err)
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	// 需要用tag指定列名，否则会只写入4个int
-	type FollowCap struct {
-		ID            uint   `gorm:"column:id"`
-		Name          string `gorm:"column:username"`
-		FollowCount   int64  `gorm:"column:follow_count"`
-		FollowerCount int64  `gorm:"column:follower_count"`
-		Status        uint   `gorm:"column:status"`
-	}
-
-	for rows.Next() {
-		var followCap FollowCap
-
-		err = dao.db.ScanRows(rows, &followCap)
-		if err != nil {
-			fmt.Println("dao.db.ScanRows error: ", err)
-		}
-
-		var isFollow bool = true
-		if followCap.Status == 2 {
-			isFollow = false
-		}
-
-		userList = append(userList, &response.User{
-			ID:            followCap.ID,
-			Name:          followCap.Name,
-			FollowCount:   dao.FollowCount(followCap.ID),
-			FollowerCount: dao.FollowerCount(followCap.ID),
-			IsFollow:      isFollow,
-		})
-	}
-
-	return userList, nil
+func (dao *Dao) GetFollowList(userID uint) (userList []*model.Follow, err error) {
+	//查询我关注的，并且关注状态是1的用户，1已关注，2已取消
+	err = dao.db.Model(&model.Follow{}).Select("be_user_id").Where("user_id = ? AND status = ?", userID, 1).
+		Order("created_at DESC").Find(&userList).Error
+	return
 }
 
-func (dao *Dao) GetFollowerList(userID uint) (userList []*response.User, err error) {
-	rows, err := dao.db.Model(&model.Follow{}).Select("user.id, user.username").Where("follow.be_user_id = ? AND follow.status = 1", userID).Joins("left join user on user.id = follow.user_id").Rows()
-	if err != nil {
-		fmt.Println("GetFollowList Rows() error: ", err)
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	// 需要用tag指定列名，否则会只写入4个int
-	type FollowCap struct {
-		ID            uint   `gorm:"column:id"`
-		Name          string `gorm:"column:username"`
-		FollowCount   int64  `gorm:"column:follow_count"`
-		FollowerCount int64  `gorm:"column:follower_count"`
-		Status        uint   `gorm:"column:status"`
-	}
-
-	for rows.Next() {
-		var followCap FollowCap
-
-		err = dao.db.ScanRows(rows, &followCap)
-		if err != nil {
-			fmt.Println("dao.db.ScanRows error: ", err)
-		}
-
-		// 这里的IsFollow应该是当前登录用户本人是否关注了这个粉丝
-		isFollow, err := dao.IsFollow(userID, followCap.ID)
-		if err != nil {
-			fmt.Println("dao.IsFollow userID=", userID, ", beUserId=", followCap.ID, " error: ", err)
-		}
-
-		userList = append(userList, &response.User{
-			ID:            followCap.ID,
-			Name:          followCap.Name,
-			FollowCount:   dao.FollowCount(followCap.ID),
-			FollowerCount: dao.FollowerCount(followCap.ID),
-			IsFollow:      isFollow,
-		})
-	}
-
-	return userList, nil
+func (dao *Dao) GetFollowerList(userID uint) (userList []*model.Follow, err error) {
+	//查询关注我，并且关注状态是1的用户，1已关注，2已取消
+	err = dao.db.Model(&model.Follow{}).Select("user_id").Where("be_user_id = ? AND status = ?", userID, 1).
+		Order("created_at DESC").Find(&userList).Error
+	return
 }
 
 func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err error) {

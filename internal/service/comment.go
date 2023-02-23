@@ -1,11 +1,11 @@
 package service
 
 import (
-	model "douyin/internal/model"
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
 	"errors"
+	"fmt"
 )
 
 func (svc *Service) CommentAction(params *request.CommentRequest, userId uint) (resp response.CommentResponse, err error) {
@@ -22,13 +22,7 @@ func (svc *Service) CommentAction(params *request.CommentRequest, userId uint) (
 		comment, user, err1 := svc.dao.AddComment(userId, params.VideoId, params.CommentText)
 		err = err1
 
-		uResp := response.User{
-			ID:            user.ID,
-			Name:          user.Username,
-			FollowCount:   svc.dao.FollowCount(user.ID),
-			FollowerCount: svc.dao.FollowerCount(user.ID),
-			IsFollow:      true,
-		}
+		uResp, _ := svc.dao.GetUserInfo(user.ID)
 
 		comResp := response.Comment{
 			Id:         int64(comment.ID),
@@ -53,7 +47,7 @@ func (svc *Service) CommentAction(params *request.CommentRequest, userId uint) (
 
 	return
 }
-func (svc *Service) CommentListAction(params *request.CommentListRequest, userId uint) (response.CommentListResponse, error) {
+func (svc *Service) CommentListAction(params *request.CommentListRequest, userId uint) (respData *response.CommentListResponse, err error) {
 
 	/*
 	   获取当前视频下方的所有评论
@@ -62,6 +56,9 @@ func (svc *Service) CommentListAction(params *request.CommentListRequest, userId
 	var commentsRsp []response.Comment
 
 	comments, err := svc.dao.GetCommentsByVideoId(params.VideoId)
+	if err != nil {
+		return respData, err
+	}
 
 	//存储所有作者的id
 	idList := make([]uint, len(comments))
@@ -70,34 +67,20 @@ func (svc *Service) CommentListAction(params *request.CommentListRequest, userId
 	}
 
 	// 通过 in 查询 获取视频作者信息
-	authorMap, err0 := svc.UsersMap(idList)
-	if err0 != nil {
-		return response.CommentListResponse{}, err0
+	authorMap, err := svc.dao.GetUserInfoList(idList)
+	if err != nil {
+		return respData, err
 	}
 
 	for i := 0; i < len(comments); i++ {
-
 		//评论的作者信息
-		user := authorMap[comments[i].UserID]
-
-		var followFlag bool = false
-
+		userRsp := authorMap[comments[i].UserID]
 		if userId != 0 {
-			followF, err2 := svc.dao.IsFollow(userId, comments[i].UserID)
-			if err2 != nil {
-				return response.CommentListResponse{}, err2
+			isFollow, err := svc.dao.IsFollow(userId, comments[i].UserID)
+			if err != nil {
+				fmt.Println("CommentListAction IsFollow error:", err)
 			}
-			followFlag = followF
-		} else {
-			followFlag = false
-		}
-
-		userRsp := response.User{
-			ID:            user.ID,
-			Name:          user.Username,
-			FollowCount:   svc.dao.FollowCount(user.ID),
-			FollowerCount: svc.dao.FollowerCount(user.ID),
-			IsFollow:      followFlag,
+			userRsp.IsFollow = isFollow
 		}
 
 		cRsp := response.Comment{
@@ -110,34 +93,10 @@ func (svc *Service) CommentListAction(params *request.CommentListRequest, userId
 		commentsRsp = append(commentsRsp, cRsp)
 	}
 
-	return response.CommentListResponse{
+	respData = &response.CommentListResponse{
 		Response:    errcode.NewResponse(errcode.OK),
 		CommentList: commentsRsp,
-	}, err
-}
-
-// UsersMap 通过in查询作者信息，并根据id进行封装
-func (svc *Service) UsersMap(idList []uint) (map[uint]model.User, error) {
-	// 通过 in 查询 获取视频作者信息
-	users, err := svc.dao.FindUserIdByIdList(idList)
-	//封装查询到的结果
-	authorMap := make(map[uint]model.User, len(users))
-	for i := 0; i < len(users); i++ {
-		authorMap[users[i].ID] = users[i]
 	}
 
-	return authorMap, err
-}
-
-// UsersFollowMap 通过in查询用户和作者的关注信息
-func (svc *Service) UsersFollowMap(idList []uint) (map[uint]model.User, error) {
-	// 通过 in 查询 获取视频作者信息
-	users, err := svc.dao.FindUserIdByIdList(idList)
-	//封装查询到的结果
-	authorMap := make(map[uint]model.User, len(users))
-	for i := 0; i < len(users); i++ {
-		authorMap[users[i].ID] = users[i]
-	}
-
-	return authorMap, err
+	return respData, err
 }

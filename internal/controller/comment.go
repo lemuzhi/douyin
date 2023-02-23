@@ -40,7 +40,7 @@ func CommentListAction(c *gin.Context) {
 		return
 	}
 	svc := service.New(c)
-	data := response.CommentListResponse{}
+	var data *response.CommentListResponse
 	// 检查是否携带token
 	if params.Token == "" {
 		data, err = svc.CommentListAction(&params, 0) //用户id为0，即未登录

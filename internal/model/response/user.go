@@ -14,5 +14,5 @@ type LoginResponse struct {
 
 type UserInfoResponse struct {
 	Response
-	User User `json:"user"`
+	User *User `json:"user"`
 }

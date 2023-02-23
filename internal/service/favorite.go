@@ -4,6 +4,7 @@ import (
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
+	"fmt"
 )
 
 func (svc *Service) FavoriteAction(params *request.FavoriteRequest, userId uint) (response.FavoriteResponse, error) {
@@ -17,9 +18,12 @@ func (svc *Service) FavoriteAction(params *request.FavoriteRequest, userId uint)
 	return response, err
 }
 
-func (svc *Service) FavoriteListAction(params *request.FavoriteListRequest) (response.FavoriteListResponse, error) {
+func (svc *Service) FavoriteListAction(params *request.FavoriteListRequest) (resp response.FavoriteListResponse, err error) {
 
 	videos, err := svc.dao.FavoriteListAction(params.UserId)
+	if err != nil {
+		return resp, err
+	}
 
 	var videosRsp []response.VideoResponse
 
@@ -31,33 +35,25 @@ func (svc *Service) FavoriteListAction(params *request.FavoriteListRequest) (res
 
 	//封装查询到的结果
 	// 通过 in 查询 获取视频作者信息
-	authorMap, err0 := svc.UsersMap(idList)
-
-	if err0 != nil {
-		return response.FavoriteListResponse{}, err0
+	authorMap, err := svc.dao.GetUserInfoList(idList)
+	if err != nil {
+		fmt.Println("FavoriteListAction GetUserInfoList error: ", err)
 	}
 	//查询当前请求用户的所有关注
 
 	//初始化返回参数
 	for i := 0; i < len(videos); i++ {
-		user := authorMap[videos[i].UserID]
 		//查看当前用户是否关注了此用户isFollow
-		followFlag, err2 := svc.dao.IsFollow(params.UserId, videos[i].UserID)
+		isFollow, err := svc.dao.IsFollow(params.UserId, videos[i].UserID)
+		authorMap[videos[i].UserID].IsFollow = isFollow
 
-		if err2 != nil {
-			return response.FavoriteListResponse{}, err2
+		if err != nil {
+			return response.FavoriteListResponse{}, err
 		}
 
-		userRsp := response.User{
-			ID:            user.ID,
-			Name:          user.Username,
-			FollowCount:   svc.dao.FollowCount(user.ID),
-			FollowerCount: svc.dao.FollowerCount(user.ID),
-			IsFollow:      followFlag,
-		}
 		vRep := response.VideoResponse{
 			ID:            videos[i].ID,
-			Author:        userRsp,
+			Author:        authorMap[videos[i].UserID],
 			PlayUrl:       videos[i].PlayUrl,
 			CoverUrl:      videos[i].CoverUrl,
 			FavoriteCount: svc.dao.FavoriteCount(videos[i].ID),
