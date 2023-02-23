@@ -28,4 +28,12 @@ func TestTime(t *testing.T) {
 	fmt.Println(time.UnixMilli(1675754584259))
 	fmt.Println(time.Unix(time.UnixMilli(1675754584259).Unix(), 0))
 	fmt.Println(time.Unix(time.UnixMilli(1675737704).Unix(), 0))
+	//time.Time(t).Format(timeFormat)
+
+	tStr := "2023-02-17T15:53:28.956+08:00"
+	ts, err := time.Parse("2006-01-02T15:04:05.000+08:00", tStr)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("时间", ts.Format("2006-01-02 15:04:05"))
 }

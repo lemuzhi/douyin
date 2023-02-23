@@ -11,6 +11,6 @@ type LoginReq struct {
 }
 
 type UserReq struct {
-	UserID int64  `form:"user_id" json:"user_id" binding:"required"`
+	UserID uint   `form:"user_id" json:"user_id" binding:"required"`
 	Token  string `form:"token" json:"token" binding:"required"`
 }

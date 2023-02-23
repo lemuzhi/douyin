@@ -34,7 +34,7 @@ func TestRelationAction(t *testing.T) {
 	daoTest := dao.New()
 	fmt.Println("TestRelationAction finish dao.New:", daoTest)
 	var user_id, be_user_id, status = 2, 3, 1
-	err := daoTest.RelationAction(int64(user_id), int64(be_user_id), uint8(status))
+	err := daoTest.RelationAction(uint(user_id), uint(be_user_id), uint8(status))
 	if err != nil {
 		fmt.Println("TestRelationAction err:", err.Error())
 	}

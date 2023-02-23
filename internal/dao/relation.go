@@ -123,21 +123,20 @@ func (dao *Dao) GetFollowerList(userID uint) (userList []*response.User, err err
 }
 
 func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err error) {
-	// SELECT f1.be_user_id FROM follow f1 join follow f2 where f1.user_id = 1 and f1.be_user_id = f2.user_id and f2.be_user_id = 1;
-	// SELECT u.id, u.username FROM follow f1 JOIN follow f2 ON f1.status = 1 AND f2.status = 1 AND f1.user_id = 1 AND f1.be_user_id = f2.user_id AND f2.be_user_id = 1 JOIN user u WHERE u.id = f1.be_user_id;
 
-	rows, err := dao.db.Raw("SELECT u.id, u.username FROM follow f1 JOIN follow f2 ON f1.status = 1 AND f2.status = 1 AND f1.user_id = ? AND f1.be_user_id = f2.user_id AND f2.be_user_id = ? JOIN user u WHERE u.id = f1.be_user_id", userID, userID).Rows()
+	rows, err := dao.db.Raw("SELECT u.id, u.username, u.avatar FROM follow f1 JOIN follow f2 ON f1.status = 1 AND f2.status = 1 AND f1.user_id = ? AND f1.be_user_id = f2.user_id AND f2.be_user_id = ? JOIN user u WHERE u.id = f1.be_user_id", userID, userID).Rows()
 
 	if err != nil {
-		fmt.Println("GetFollowList Rows() error: ", err)
+		fmt.Println("GetFriendList Rows() error: ", err)
 		return nil, err
 	}
 
 	defer rows.Close()
 
 	type FriendCap struct {
-		ID   uint   `gorm:"column:id"`
-		Name string `gorm:"column:username"`
+		ID     uint   `gorm:"column:id"`
+		Name   string `gorm:"column:username"`
+		Avatar string `gorm:"column:avatar"`
 	}
 
 	for rows.Next() {
@@ -148,7 +147,6 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 			fmt.Println("dao.db.ScanRows error: ", err)
 		}
 
-		// TODO: 头像 与 message 放的是假数据
 		userList = append(userList, &response.FriendUser{
 			User: response.User{
 				ID:            friendCap.ID,
@@ -157,7 +155,7 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 				FollowerCount: dao.FollowerCount(friendCap.ID),
 				IsFollow:      true,
 			},
-			Avatar:  "https://c-ssl.duitang.com/uploads/blog/202102/08/20210208200511_45cb8.jpg",
+			Avatar:  friendCap.Avatar,
 			Message: "这是一条测试信息",
 			MsgType: 0,
 		})
