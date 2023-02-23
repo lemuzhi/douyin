@@ -13,7 +13,7 @@ RUN go env -w GO111MODULE=on \
 #    && go mod tidy \
     && go build -o server .
 
-RUN chmod +x ./third_party/ffmpeg.exe
+RUN chmod +x ./third_party/ffmpeg
 
 EXPOSE 8080
 ENTRYPOINT ./server
