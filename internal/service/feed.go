@@ -5,6 +5,7 @@ import (
 	"douyin/internal/model/request"
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
+	"fmt"
 	"time"
 )
 
@@ -25,35 +26,28 @@ func (svc *Service) GetFeedList(uid uint, params *request.FeedRequest) (resp res
 		return resp, err
 	}
 
-	var isFollow, isFavorite bool
+	var isFavorite bool
 	var video *model.Video
 	var videos []*response.VideoResponse
+	var user *response.User
 	for i := 0; i < n; i++ {
 		video = (*videoList)[i]
+		//获取视频作者信息
+		user, err = svc.dao.GetUserInfo(video.User.ID)
+		if err != nil {
+			fmt.Println("GetFeedList GetUserInfo error: ", err)
+		}
+
 		//判断用户用户是否点赞该视频，是否关注该视频的用户
 		if uid > 0 {
 			isFavorite = svc.dao.IsFavorite(uid, video.ID)
-			isFollow, _ = svc.dao.IsFollow(uid, video.User.ID)
+			user.IsFollow, _ = svc.dao.IsFollow(uid, video.User.ID)
 		}
 
-		workCount, videoIdList := svc.dao.WorkCount(video.User.ID) //作品数量
-
 		videos = append(videos, &response.VideoResponse{
-			ID:    video.ID,
-			Title: video.Title,
-			Author: response.User{
-				ID:              video.User.ID,
-				Name:            video.User.Username,
-				FollowCount:     svc.dao.FollowCount(video.User.ID),
-				FollowerCount:   svc.dao.FollowerCount(video.User.ID),
-				IsFollow:        isFollow,
-				Avatar:          video.User.Avatar,
-				BackgroundImage: video.User.BackgroundImage,
-				Signature:       video.User.Signature,
-				TotalFavorited:  svc.dao.TotalFavorited(videoIdList),
-				WorkCount:       workCount,
-				FavoriteCount:   svc.dao.UserFavoriteCount(video.User.ID), //点赞数量,
-			},
+			ID:            video.ID,
+			Title:         video.Title,
+			Author:        user,
 			PlayUrl:       video.PlayUrl,
 			CoverUrl:      video.CoverUrl,
 			FavoriteCount: int64(len(video.Favorites)),

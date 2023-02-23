@@ -43,6 +43,7 @@ Label:
 		NamingStrategy: &schema.NamingStrategy{
 			SingularTable: true,
 		},
+		//Logger: logger.Default.LogMode(logger.Info), //全局打印SQL日志
 		//禁用事物
 		//SkipDefaultTransaction: true,
 	})
