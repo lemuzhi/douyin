@@ -23,7 +23,7 @@ func (svc *Service) Register(params request.RegisterReq) (*response.LoginRespons
 		//客户端用户注册暂无设置头像、背景图、简介功能，也无修改功能，所以暂时写死
 		Avatar:          "https://c-ssl.duitang.com/uploads/blog/202102/08/20210208200511_45cb8.jpg",
 		BackgroundImage: "https://article.autotimes.com.cn/wp-content/uploads/2022/04/95f35f8c40454bf1b4f18d7c79b5b948.jpg",
-		Signature:       fmt.Sprintf("我在%s注册了抖声，欢迎关注！", time.Now().Local().String()),
+		Signature:       fmt.Sprintf("我于%s注册了抖声，欢迎关注！", time.Now().Format("2006-01-02 15:04:05")),
 	}
 	id, err := svc.dao.Register(&user)
 	if err != nil {

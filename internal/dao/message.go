@@ -23,7 +23,7 @@ func (dao *Dao) SendMessage(userId uint, toUserId uint, content string) error {
 	message := model.Message{}
 
 	message.Content = content
-	message.CreateTime = time.Now()
+	message.CreateTime = time.Now().Unix()
 	message.FromUserID = userId
 	message.ToUserID = toUserId
 	message.ID, _ = snowflake.GetID()
@@ -39,8 +39,12 @@ func (dao *Dao) SendMessage(userId uint, toUserId uint, content string) error {
 	return nil
 }
 
-func (dao *Dao) GetMessagebyIdAndTime(userId uint, toUserId uint, PreMsgTime int64) (message []model.Message, err error) {
-
-	err = dao.db.Where("from_user_id= ?", userId).Where("to_user_id", toUserId).Where("create_time > ?", PreMsgTime).Find(&message).Error
+func (dao *Dao) GetMessagebyIdAndTime(formUserId uint, toUserId uint, PreMsgTime int64) (message []model.Message, err error) {
+	if PreMsgTime == 0 {
+		//未传入上次最新的消息时间，从最早发布的消息开始获取
+		err = dao.db.Where("from_user_id = ? AND to_user_id = ?", toUserId, formUserId).Order("create_time").Last(&message).Error
+		return
+	}
+	err = dao.db.Where("from_user_id = ? AND to_user_id = ? AND create_time > ?", toUserId, formUserId, PreMsgTime).Find(&message).Error
 	return
 }
