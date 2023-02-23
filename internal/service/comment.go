@@ -63,12 +63,12 @@ func (svc *Service) CommentListAction(params *request.CommentListRequest, userId
 
 	comments, err := svc.dao.GetCommentsByVideoId(params.VideoId)
 
-	if len(comments) == 0 {
-		return response.CommentListResponse{
-			Response:    errcode.NewResponse(errcode.OK),
-			CommentList: commentsRsp,
-		}, err
-	}
+	//if len(comments) == 0 {
+	//	return response.CommentListResponse{
+	//		Response:    errcode.NewResponse(errcode.OK),
+	//		CommentList: commentsRsp,
+	//	}, err
+	//}
 
 	//存储所有作者的id
 	idList := make([]uint, len(comments))
