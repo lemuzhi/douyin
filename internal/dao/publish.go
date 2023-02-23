@@ -26,8 +26,7 @@ func (dao *Dao) GetPublishList(userID, beUserID uint) (videoList []*response.Vid
 
 	defer rows.Close()
 
-	var user model.User
-	err = dao.db.Select("id", "username").Where("id = ?", userID).Find(&user).Error
+	user, err := dao.GetUserInfo(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +35,12 @@ func (dao *Dao) GetPublishList(userID, beUserID uint) (videoList []*response.Vid
 	if beUserID > 0 {
 		isFollow, _ = dao.IsFollow(userID, beUserID)
 	}
-	followCount := dao.FollowCount(userID)
-	followerCount := dao.FollowerCount(beUserID)
+	followCount := dao.FollowCount(userID)          //关注总数
+	followerCount := dao.FollowerCount(beUserID)    //粉丝总数
+	workCount, videoIdList := dao.WorkCount(userID) //作品数量
+	favoriteCount := dao.UserFavoriteCount(userID)  //点赞数量
+
+	totalFavorited := dao.TotalFavorited(videoIdList)
 
 	for rows.Next() {
 		var video model.Video
@@ -52,11 +55,17 @@ func (dao *Dao) GetPublishList(userID, beUserID uint) (videoList []*response.Vid
 			ID:    video.ID,
 			Title: video.Title,
 			Author: response.User{
-				ID:            user.ID,
-				Name:          user.Username,
-				FollowCount:   followCount,
-				FollowerCount: followerCount,
-				IsFollow:      isFollow,
+				ID:              user.ID,
+				Name:            user.Username,
+				FollowCount:     followCount,
+				FollowerCount:   followerCount,
+				IsFollow:        isFollow,
+				Avatar:          user.Avatar,
+				BackgroundImage: user.BackgroundImage,
+				Signature:       user.Signature,
+				TotalFavorited:  totalFavorited,
+				WorkCount:       workCount,
+				FavoriteCount:   favoriteCount,
 			},
 			PlayUrl:       video.PlayUrl,
 			CoverUrl:      video.CoverUrl,
@@ -65,6 +74,29 @@ func (dao *Dao) GetPublishList(userID, beUserID uint) (videoList []*response.Vid
 			IsFavorite:    dao.IsFavorite(user.ID, video.ID),
 		})
 	}
-
 	return videoList, nil
+}
+
+func (dao *Dao) WorkCount(uid uint) (count int64, videoList *[]model.Video) {
+	fmt.Println("用户id", uid)
+	dao.db.Model(&model.Video{}).Select("id").Where("user_id = ?", uid).Count(&count).Find(&videoList)
+	fmt.Println("数量", count)
+	fmt.Println("视频id列表", videoList)
+	return count, videoList
+}
+
+func (dao *Dao) UserFavoriteCount(uid uint) int64 {
+	var count int64
+	dao.db.Model(&model.Favorite{}).Where("user_id = ?", uid).Count(&count)
+	return count
+}
+
+func (dao *Dao) TotalFavorited(videoIdList *[]model.Video) int64 {
+	var count int64
+	var num int64
+	for i := 0; i < len(*videoIdList); i++ {
+		dao.db.Model(&model.Favorite{}).Where("video_id = ?", (*videoIdList)[i].ID).Count(&count)
+		num += count
+	}
+	return num
 }

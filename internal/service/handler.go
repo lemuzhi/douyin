@@ -1,16 +1,16 @@
 package service
 
 import (
-	"context"
 	"douyin/internal/dao"
+	"github.com/gin-gonic/gin"
 )
 
 type Service struct {
-	ctx context.Context
+	ctx *gin.Context
 	dao *dao.Dao
 }
 
-func New(ctx context.Context) Service {
+func New(ctx *gin.Context) Service {
 	svc := Service{ctx: ctx}
 	svc.dao = dao.New()
 	return svc

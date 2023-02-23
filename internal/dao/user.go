@@ -13,13 +13,14 @@ func (dao *Dao) Login(username string) (user *model.User, err error) {
 	return user, dao.db.Where("username = ?", username).First(&user).Error
 }
 
-func (dao *Dao) GetUserInfo(id int64) (model.User, error) {
+func (dao *Dao) GetUserInfo(uid uint) (model.User, error) {
 	var user model.User
-	err := dao.db.Select("id", "username").Where("id = ?", id).First(&user).Error
+	err := dao.db.Select("id", "username", "avatar", "background_image", "signature").Where("id = ?", uid).First(&user).Error
 	if err != nil {
 		log.Println("GetUserInfo function query error: ", err)
 		return user, err
 	}
+
 	return user, nil
 }
 
@@ -36,6 +37,5 @@ func (dao *Dao) FindUserIdByName(name string) (user model.User, err error) {
 }
 
 func (dao *Dao) FindUserIdByIdList(idList []uint) (users []model.User, err error) {
-
 	return users, dao.db.Where("id IN ?", idList).Find(&users).Error
 }
