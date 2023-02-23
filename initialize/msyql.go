@@ -22,6 +22,7 @@ func migrate(db *gorm.DB) error {
 		model.Comment{},  //评论表
 		model.Favorite{}, //喜欢视频表
 		model.Follow{},   //关注表
+		model.Message{},  //信息表
 	)
 }
 
