@@ -8,36 +8,6 @@ import (
 	"time"
 )
 
-func (svc *Service) Feed() (response.FeedResponse, error) {
-	video, user, err := svc.dao.Feed()
-	userRsp := response.User{
-		ID:            user.ID,
-		Name:          user.Nickname,
-		FollowCount:   svc.dao.FollowCount(user.ID),
-		FollowerCount: svc.dao.FollowerCount(user.ID),
-		IsFollow:      false,
-	}
-
-	videoRsp := []*response.VideoResponse{
-		{
-			ID:            video.ID,
-			Title:         video.Title,
-			Author:        userRsp,
-			PlayUrl:       video.PlayUrl,
-			CoverUrl:      video.CoverUrl,
-			FavoriteCount: svc.dao.FavoriteCount(video.ID),
-			CommentCount:  svc.dao.CommentCount(video.ID),
-			IsFavorite:    false,
-		},
-	}
-
-	return response.FeedResponse{
-		Response:  errcode.NewResponse(errcode.OK),
-		VideoList: videoRsp,
-		NextTime:  time.Now().Unix(),
-	}, err
-}
-
 func (svc *Service) GetFeedList(uid uint, params *request.FeedRequest) (resp response.FeedResponse, err error) {
 	var lastTime time.Time
 	if params.LatestTime == 0 {
@@ -65,15 +35,24 @@ func (svc *Service) GetFeedList(uid uint, params *request.FeedRequest) (resp res
 			isFavorite = svc.dao.IsFavorite(uid, video.ID)
 			isFollow, _ = svc.dao.IsFollow(uid, video.User.ID)
 		}
+
+		workCount, videoIdList := svc.dao.WorkCount(video.User.ID) //作品数量
+
 		videos = append(videos, &response.VideoResponse{
 			ID:    video.ID,
 			Title: video.Title,
 			Author: response.User{
-				ID:            video.User.ID,
-				Name:          video.User.Username,
-				FollowCount:   svc.dao.FollowCount(video.User.ID),
-				FollowerCount: svc.dao.FollowerCount(video.User.ID),
-				IsFollow:      isFollow,
+				ID:              video.User.ID,
+				Name:            video.User.Username,
+				FollowCount:     svc.dao.FollowCount(video.User.ID),
+				FollowerCount:   svc.dao.FollowerCount(video.User.ID),
+				IsFollow:        isFollow,
+				Avatar:          video.User.Avatar,
+				BackgroundImage: video.User.BackgroundImage,
+				Signature:       video.User.Signature,
+				TotalFavorited:  svc.dao.TotalFavorited(videoIdList),
+				WorkCount:       workCount,
+				FavoriteCount:   svc.dao.UserFavoriteCount(video.User.ID), //点赞数量,
 			},
 			PlayUrl:       video.PlayUrl,
 			CoverUrl:      video.CoverUrl,

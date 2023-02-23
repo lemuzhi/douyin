@@ -1,7 +1,5 @@
 package errcode
 
-//type code [2]interface{}
-
 type ResponseCode struct {
 	Code int32
 	Msg  string
@@ -24,4 +22,7 @@ var (
 
 	ErrVideoNotExist = ResponseCode{103001, "视频不存在"}
 	ErrPublishVideo  = ResponseCode{103002, "视频发布失败"}
+
+	ErrSendMsg = ResponseCode{104001, "消息发送失败"}
+	ErrMsgType = ResponseCode{104002, "消息类型有误"}
 )

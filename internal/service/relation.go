@@ -40,3 +40,16 @@ func (svc *Service) FollowerList(params request.FollowListReq) (*response.Follow
 	}
 	return &data, nil
 }
+
+func (svc *Service) FriendList(params request.FriendListReq) (*response.FriendListResponse, error) {
+	userList, err := svc.dao.GetFriendList(params.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	data := response.FriendListResponse{
+		Response: errcode.NewResponse(errcode.OK),
+		UserList: userList,
+	}
+	return &data, nil
+}

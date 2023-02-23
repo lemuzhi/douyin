@@ -45,3 +45,14 @@ func (dao *Dao) FavoriteCount(vid uint) (count int64) {
 	dao.db.Model(&model.Favorite{}).Where("video_id = ? AND status = ?", vid, 1).Count(&count)
 	return
 }
+
+func (dao *Dao) IsFavorite(uid, vid uint) bool {
+	var count int64
+
+	dao.db.Model(&model.Favorite{}).Where("user_id = ? AND video_id = ? AND status = ?", uid, vid, 1).Count(&count)
+
+	if count > 0 {
+		return true
+	}
+	return false
+}

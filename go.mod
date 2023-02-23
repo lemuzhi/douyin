@@ -9,6 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/rs/xid v1.4.0
+	github.com/sony/sonyflake v1.1.0
 	github.com/spf13/viper v1.14.0
 	github.com/u2takey/ffmpeg-go v0.4.1
 	golang.org/x/crypto v0.5.0
