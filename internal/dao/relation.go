@@ -59,15 +59,16 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 		Name   string `gorm:"column:username"`
 		Avatar string `gorm:"column:avatar"`
 	}
-
-	var msg model.Message
 	for rows.Next() {
 		var friendCap FriendCap
-
+		var msg model.Message
 		err = dao.db.ScanRows(rows, &friendCap)
 		if err != nil {
 			fmt.Println("dao.db.ScanRows error: ", err)
 		}
+
+		fmt.Println("from_user_id =", friendCap.ID)
+		fmt.Println("to_user_id =", userID)
 		_ = dao.db.Debug().Where("from_user_id = ? AND to_user_id = ?", friendCap.ID, userID).Order("create_time DESC").Take(&msg).Error
 		userList = append(userList, &response.FriendUser{
 			User: response.User{
