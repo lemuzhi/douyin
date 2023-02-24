@@ -58,7 +58,7 @@ func (r *Resp) RespFailDetail(code ResponseCode, err ...interface{}) {
 		case string:
 			msg += arg.(string)
 		default:
-			msg += fmt.Sprintf("%v", err)
+			msg += fmt.Sprintf("  %v", err)
 		}
 	}
 

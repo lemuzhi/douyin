@@ -12,7 +12,7 @@ func Register(c *gin.Context) {
 	send := errcode.New(c)
 	err := c.ShouldBindQuery(&params)
 	if err != nil {
-		send.RespFail(errcode.ErrInvalidParams)
+		send.RespFailDetail(errcode.ErrInvalidParams, "账号或密码长度不能小于6位")
 		return
 	}
 
