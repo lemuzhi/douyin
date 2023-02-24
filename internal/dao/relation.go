@@ -69,7 +69,7 @@ func (dao *Dao) GetFriendList(userID uint) (userList []*response.FriendUser, err
 
 		fmt.Println("from_user_id =", friendCap.ID)
 		fmt.Println("to_user_id =", userID)
-		_ = dao.db.Debug().Where("from_user_id = ? AND to_user_id = ?", friendCap.ID, userID).Order("create_time DESC").Take(&msg).Error
+		_ = dao.db.Where("from_user_id = ? AND to_user_id = ?", friendCap.ID, userID).Order("create_time DESC").Take(&msg).Error
 		userList = append(userList, &response.FriendUser{
 			User: response.User{
 				ID:            friendCap.ID,

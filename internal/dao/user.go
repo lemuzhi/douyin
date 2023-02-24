@@ -3,6 +3,9 @@ package dao
 import (
 	"douyin/internal/model"
 	"douyin/internal/model/response"
+	"douyin/pkg/errcode"
+	"errors"
+	"gorm.io/gorm"
 	"log"
 )
 
@@ -11,7 +14,11 @@ func (dao *Dao) Register(user *model.User) (uint, error) {
 }
 
 func (dao *Dao) Login(username string) (user *model.User, err error) {
-	return user, dao.db.Where("username = ?", username).First(&user).Error
+	err = dao.db.Where("username = ?", username).First(&user).Error
+	if err == gorm.ErrRecordNotFound {
+		return user, errors.New(errcode.ErrUserOrPwd.Msg)
+	}
+	return user, err
 }
 
 // GetUserInfo 获取单个用户信息
@@ -85,4 +92,9 @@ func (dao *Dao) FindUserIdByName(name string) (user model.User, err error) {
 
 func (dao *Dao) FindUserIdByIdList(idList []uint) (users []model.User, err error) {
 	return users, dao.db.Where("id IN ?", idList).Find(&users).Error
+}
+
+func (dao *Dao) FindUserCount(name string) (count int64) {
+	dao.db.Model(&model.User{}).Where("username = ?", name).Count(&count)
+	return
 }

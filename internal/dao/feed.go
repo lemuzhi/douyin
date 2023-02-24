@@ -9,7 +9,7 @@ import (
 const limit = 5 //每次获取的视频数量
 
 func (dao *Dao) GetFeedList(lastTime time.Time) (videoList *[]*model.Video, err error) {
-	err = dao.db.Debug().Preload("User", func(db *gorm.DB) *gorm.DB {
+	err = dao.db.Preload("User", func(db *gorm.DB) *gorm.DB {
 		return db.Select("id", "username", "avatar", "background_image", "signature")
 	}).Preload("Comments", func(db *gorm.DB) *gorm.DB {
 		return db.Select("user_id", "video_id")

@@ -6,12 +6,17 @@ import (
 	"douyin/internal/model/response"
 	"douyin/pkg/errcode"
 	"douyin/pkg/utils"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
 
 func (svc *Service) Register(params request.RegisterReq) (*response.LoginResponse, error) {
+	count := svc.dao.FindUserCount(params.Username)
+	if count > 0 {
+		return nil, errors.New(errcode.ErrUserExists.Msg)
+	}
 	pwd, err := utils.EncipherPassword(params.Password)
 	if err != nil {
 		return nil, err
